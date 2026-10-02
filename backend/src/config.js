@@ -19,6 +19,9 @@ module.exports = {
   appUrl: env.APP_URL || 'http://localhost:3000',
   cookieSecure: env.COOKIE_SECURE === undefined ? (env.NODE_ENV || 'development') === 'production' : String(env.COOKIE_SECURE) === 'true',
   resetTokenMinutes: Number(env.RESET_TOKEN_MINUTES || 30),
+  resendApiKey: env.RESEND_API_KEY || '',
+  emailFrom: env.EMAIL_FROM || '',
   rootDir: path.resolve(__dirname, '../..'),
   dbFile: path.resolve(env.DB_FILE || path.resolve(__dirname, '../data/curriculo-facil.sqlite'))
 };
+
