@@ -78,6 +78,12 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   const home = await call('/');
   assert.equal(home.status, 200);
   assert.match(await home.text(), /Currículo Fácil/);
+  const wizardPage = await call('/pages/builder/novo-curriculo.html');
+  const wizardHtml = await wizardPage.text();
+  assert.equal((wizardHtml.match(/data-wizard-step=/g) || []).length, 4);
+  assert.match(wizardHtml, /data-add-experience/);
+  assert.match(wizardHtml, /data-add-education/);
+  assert.match(wizardHtml, /name="template"/);
 
   const plans = await call('/api/plans');
   assert.equal(plans.status, 200);
@@ -116,6 +122,11 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   const resume = (await created.json()).resume;
   assert.equal(resume.template, 'classic');
   assert.equal(resume.accent, '#1769aa');
+  const exported = await call(`/api/resumes/${resume.id}/export`, { method: 'POST', cookie });
+  const exportedHtml = await exported.text();
+  assert.equal(exported.status, 200);
+  assert.match(exportedHtml, /paper template-classic/);
+  assert.match(exportedHtml, /template-classic \.head/);
 
   const otherEmail = `other-${crypto.randomUUID()}@example.test`;
   const otherRegistration = await call('/api/auth/register', {
