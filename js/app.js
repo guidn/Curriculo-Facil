@@ -4,7 +4,7 @@ async function api(path, options = {}) {
   const res = await fetch(API + path, { credentials: 'include', headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }, ...options });
   const type = res.headers.get('content-type') || '';
   const data = type.includes('application/json') ? await res.json() : await res.text();
-  if (!res.ok) throw new Error(data?.error || 'Não foi possível concluir a operação.');
+  if (!res.ok) { const error = new Error(data?.error || 'Não foi possível concluir a operação.'); error.code=data?.code; error.details=data?.details; throw error; }
   return data;
 }
 
@@ -42,22 +42,25 @@ async function initAuth() {
 }
 
 async function initDashboard(){
-  if(!$('[data-user-name]')&&!$('[data-resume-count]')&&!$('[data-resume-list]'))return;
+  if(!$('[data-user-name]')&&!$('[data-resume-count]')&&!$('[data-resume-list]')&&!$('[data-resume-library]'))return;
   const user=await currentUser(); if(!user)return go('../auth/login.html');
   const name=$('[data-user-name]'); if(name) name.textContent=user.name.split(' ')[0];
   const plan=$('[data-user-plan]'); if(plan)plan.textContent={free:'Gratuito',basic:'Básico',premium:'Premium'}[user.plan];
-  try{const [r,u]=await Promise.all([api('/resumes'),api('/usage')]); $('[data-resume-count]').textContent=r.resumes.length; $('[data-usage]').textContent=u.remaining.exports===null?'Ilimitado':`${u.remaining.exports}/${u.plan.dailyLimit}`; renderResumeList(r.resumes);}catch(err){toast(err.message,'error')}
+  try{const [r,u]=await Promise.all([api('/resumes'),api('/usage')]); const count=$('[data-resume-count]');if(count)count.textContent=r.resumes.length;const usage=$('[data-usage]');if(usage)usage.textContent=u.remaining.exports===null?'Ilimitado':`${u.remaining.exports}/${u.plan.dailyLimit}`;const capacity=$('[data-resume-capacity]');if(capacity){const c=u.resumeCapacity;capacity.textContent=c.limit===null?`${c.current} currículos salvos · sem limite`: `Você tem ${c.current} de ${c.limit} currículos salvos. ${c.available?`Pode criar mais ${c.available}.`: 'Para criar outro, exclua um currículo ou confira os planos.'}`}renderResumeList(r.resumes,!!$('[data-resume-library]'));}catch(err){toast(err.message,'error')}
 }
-function renderResumeList(resumes){const box=$('[data-resume-list]');if(!box)return;box.innerHTML=resumes.length?resumes.slice(0,3).map(r=>`<div class="resume-row"><div class="resume-info"><div class="resume-thumb"></div><div><strong>${escapeHtml(r.title)}</strong><span>${new Date(r.updatedAt).toLocaleDateString('pt-BR')} · ${escapeHtml(r.template)}</span></div></div><a class="button button-secondary button-small" href="../builder/editor.html?id=${encodeURIComponent(r.id)}">Editar</a></div>`).join(''):'<p class="muted">Você ainda não criou nenhum currículo.</p>';}
+function renderResumeList(resumes,library=false){const box=$('[data-resume-library]')||$('[data-resume-list]');if(!box)return;const list=library?resumes:resumes.slice(0,3);box.innerHTML=list.length?list.map(r=>`<article class="resume-row"><div class="resume-info"><div class="resume-thumb"></div><div><strong>${escapeHtml(r.title)}</strong><span>${new Date(r.updatedAt).toLocaleDateString('pt-BR')} · ${escapeHtml(templateName(r.template))}</span></div></div><div class="resume-actions"><a class="button button-secondary button-small" href="../builder/editor.html?id=${encodeURIComponent(r.id)}">Editar e visualizar</a><button class="button button-ghost button-small delete-resume" type="button" data-resume-delete="${escapeHtml(r.id)}">Excluir</button></div></article>`).join(''):`<div class="empty-resumes"><div class="empty-resume-icon">▤</div><h2>Nenhum currículo salvo ainda</h2><p>Crie um currículo ou escolha um modelo para começar.</p><div class="resume-actions"><a class="button button-primary button-small" href="../builder/novo-curriculo.html">Criar currículo</a><a class="button button-secondary button-small" href="../builder/modelos.html">Escolher modelo</a></div></div>`;box.onclick=async event=>{const button=event.target.closest('[data-resume-delete]');if(!button)return;if(!confirm('Excluir este currículo? Essa ação remove o currículo e não pode ser desfeita.'))return;button.disabled=true;try{await api('/resumes/'+encodeURIComponent(button.dataset.resumeDelete),{method:'DELETE'});toast('Currículo excluído. Uma vaga foi liberada.','success');location.reload()}catch(error){button.disabled=false;toast(error.message,'error')}}}
+function templateName(key){return({modern:'Moderno',classic:'Clássico',minimal:'Minimal',executive:'Executivo',creative:'Criativo'})[key]||'Moderno'}
 
 async function initNewResume() {
   const form = $('[data-resume-create]');
   if (!form) return;
   const user = await currentUser();
   if (!user) return go('../auth/login.html');
+  const profile=user.resumeProfile||{};
   const nameField = $('[name="name"]', form), emailField = $('[name="email"]', form);
   if (nameField && !nameField.value) nameField.value = user.name || '';
   if (emailField && !emailField.value) emailField.value = user.email || '';
+  for(const key of ['role','phone','city','summary'])if(form.elements[key]&&!form.elements[key].value)form.elements[key].value=profile[key]||'';
   if (new URLSearchParams(location.search).get('onboarding') === '1') {
     const title = $('[data-builder-title]', form);
     if (title) title.textContent = 'Vamos preparar seu primeiro currículo.';
@@ -105,6 +108,10 @@ async function initNewResume() {
     const firstInput = $('input', entry);
     firstInput?.focus();
   }
+
+  (profile.experiences||[]).forEach(item=>{addEntry('[data-experience-template]','[data-experience-list]');const row=$$('[data-experience-entry]',form).at(-1);for(const [key,value] of Object.entries({experienceRole:item.role,experienceCompany:item.company,experienceStartDate:item.startDate,experienceEndDate:item.endDate,experienceDescription:item.description})){const input=row.querySelector(`[name="${key}"]`);if(input&&value)input.value=value}const active=row.querySelector('[name="experienceCurrent"]');if(active){active.checked=!!item.current;const end=row.querySelector('[name="experienceEndDate"]');if(end)end.disabled=active.checked}});
+  (profile.education||[]).forEach(item=>{addEntry('[data-education-template]','[data-education-list]');const row=$$('[data-education-entry]',form).at(-1);for(const [key,value] of Object.entries({educationCourse:item.course,educationSchool:item.school,educationStartDate:item.startDate,educationEndDate:item.endDate})){const input=row.querySelector(`[name="${key}"]`);if(input&&value)input.value=value}const active=row.querySelector('[name="educationCurrent"]');if(active){active.checked=!!item.current;const end=row.querySelector('[name="educationEndDate"]');if(end)end.disabled=active.checked}});
+  const quickSkills=new Set();(profile.skills||[]).forEach(skill=>{const chip=$$('[data-skill-chip]',form).find(button=>button.dataset.skillChip.toLowerCase()===skill.toLowerCase());if(chip){chip.classList.add('selected');chip.setAttribute('aria-pressed','true')}else quickSkills.add(skill)});if(form.elements.customSkills)form.elements.customSkills.value=[...quickSkills].join(', ');
 
   $('[data-add-experience]', form).addEventListener('click', () => addEntry('[data-experience-template]', '[data-experience-list]'));
   $('[data-add-education]', form).addEventListener('click', () => addEntry('[data-education-template]', '[data-education-list]'));
@@ -191,6 +198,7 @@ async function initNewResume() {
       });
       go(`editor.html?id=${encodeURIComponent(result.resume.id)}`);
     } catch (err) {
+      if(err.code==='RESUME_LIMIT_REACHED')$('[data-resume-limit]')?.removeAttribute('hidden');
       toast(err.message, 'error');
     } finally {
       submitButton.disabled = false;
@@ -230,11 +238,11 @@ async function initEditor(){
   form.addEventListener('click',event=>{if(event.target.closest('[data-editor-remove]')){event.target.closest('[data-editor-entry]')?.remove();refresh()}});
   form.addEventListener('input',refresh);
   form.addEventListener('change',event=>{const current=event.target;if(current.matches('[data-current]')){const end=current.closest('[data-editor-entry]')?.querySelector('[data-entry-field="endDate"]');if(end){end.disabled=current.checked;if(current.checked)end.value=''}refresh()}});
-  $('[data-save]')?.addEventListener('click',()=>save(false)); $('[data-export]')?.addEventListener('click',()=>{clearTimeout(saveTimer);save(true).then(saved=>{if(saved)exportResume(r.id)})}); $('[data-share]')?.addEventListener('click',()=>{clearTimeout(saveTimer);save(true).then(saved=>{if(saved)shareResume(r.id)})});
+  $('[data-save]')?.addEventListener('click',()=>save(false)); $('[data-save-preview]')?.addEventListener('click',()=>save(false).then(saved=>{if(saved){workspace.classList.add('preview-mode');$('[data-save-preview]').hidden=true;$('[data-return-editor]').hidden=false;showStatus('Prévia pronta')}})); $('[data-return-editor]')?.addEventListener('click',()=>{workspace.classList.remove('preview-mode');$('[data-save-preview]').hidden=false;$('[data-return-editor]').hidden=true});
+  $('[data-export]')?.addEventListener('click',()=>{clearTimeout(saveTimer);save(true).then(saved=>{if(saved)exportResume(r.id)})}); $('[data-share]')?.addEventListener('click',()=>{clearTimeout(saveTimer);save(true).then(saved=>{if(saved)shareResume(r.id)})});
   document.addEventListener('keydown',event=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='s'){event.preventDefault();save(false)}});
   $$('.color-choice').forEach(button=>button.addEventListener('click',()=>{form.elements.accent.value=button.dataset.color;$$('.color-choice').forEach(x=>x.classList.toggle('selected',x===button));refresh()}));
   $$('.template-choice').forEach(button=>button.addEventListener('click',()=>{form.elements.template.value=button.dataset.template;$$('.template-choice').forEach(x=>x.classList.toggle('selected',x===button));refresh()}));
-  $$('[data-editor-view]').forEach(button=>button.addEventListener('click',()=>{$$('[data-editor-view]').forEach(x=>{const active=x===button;x.classList.toggle('active',active);x.setAttribute('aria-selected',String(active))});workspace.dataset.activeView=button.dataset.editorView}));
   const paper=$('[data-paper]'),zoomLabel=$('[data-zoom-label]');const setZoom=value=>{zoom=Math.max(.45,Math.min(1.25,value));paper.style.zoom=String(zoom);if(zoomLabel)zoomLabel.textContent=`${Math.round(zoom*100)}%`};
   $$('[data-zoom]').forEach(button=>button.addEventListener('click',()=>{if(button.dataset.zoom==='in')setZoom(zoom+.1);else if(button.dataset.zoom==='out')setZoom(zoom-.1);else setZoom(Math.min(1,(($('.editor-canvas')?.clientWidth||850)-64)/760))}));
   $$('.template-choice').forEach(button=>button.classList.toggle('selected',button.dataset.template===r.template));$$('.color-choice').forEach(button=>button.classList.toggle('selected',button.dataset.color===r.accent));
@@ -251,7 +259,7 @@ async function exportResume(id){try{const html=await fetch('/api/resumes/'+id+'/
 async function shareResume(id){try{const r=await api('/resumes/'+id+'/share',{method:'POST'});await navigator.clipboard?.writeText(r.url);toast(`Link copiado: ${r.url}`,'success')}catch(e){toast(e.message,'error')}}
 
 async function initModels(){const box=$('[data-models]');if(!box)return;if(!(await currentUser()))return go('../auth/login.html');const r=await api('/models');box.innerHTML=r.models.map(m=>`<article class="model-card"><div class="model-preview ${m.key}"><div></div></div><div class="model-info"><h3>${m.name}</h3><p>${m.description}</p><a class="button button-primary button-small" href="novo-curriculo.html?template=${m.key}">Usar modelo</a></div></article>`).join('')}
-async function initProfile(){const f=$('[data-profile-form]');if(!f)return;if(!(await currentUser()))return go('../auth/login.html');const u=await currentUser();f.elements.name.value=u.name;f.elements.email.value=u.email;f.addEventListener('submit',async e=>{e.preventDefault();try{await api('/profile',{method:'PATCH',body:JSON.stringify({name:f.elements.name.value})});toast('Perfil atualizado.','success')}catch(err){toast(err.message,'error')}})}
+async function initProfile(){const f=$('[data-profile-form]');if(!f)return;const user=await currentUser();if(!user)return go('../auth/login.html');const profile=user.resumeProfile||{};f.elements.name.value=user.name;f.elements.email.value=user.email;for(const key of ['role','phone','city','summary'])if(f.elements[key])f.elements[key].value=profile[key]||'';if(f.elements.skills)f.elements.skills.value=(profile.skills||[]).join(', ');(profile.experiences||[]).forEach(item=>addEditorEntry(f,'experience',{...item,startDate:item.startDate||parseLegacyDate(item.period)}));(profile.education||[]).forEach(item=>addEditorEntry(f,'education',{...item,startDate:item.startDate||parseLegacyDate(item.period)}));$$('[data-editor-add]',f).forEach(button=>button.addEventListener('click',()=>{addEditorEntry(f,button.dataset.editorAdd);button.previousElementSibling?.scrollIntoView({behavior:'smooth',block:'nearest'})}));f.addEventListener('click',event=>{if(event.target.closest('[data-editor-remove]'))event.target.closest('[data-editor-entry]')?.remove()});f.addEventListener('submit',async event=>{event.preventDefault();const button=$('button[type="submit"]',f),status=$('[data-profile-status]');button.disabled=true;if(status)status.textContent='Salvando…';try{const out=await api('/profile',{method:'PATCH',body:JSON.stringify({name:f.elements.name.value,resumeProfile:collectEditor(f)})});currentUserRequest=Promise.resolve(out.user);if(status)status.textContent='Perfil e dados profissionais salvos.';toast('Perfil atualizado.','success')}catch(error){if(status)status.textContent='Não foi possível salvar.';toast(error.message,'error')}finally{button.disabled=false}})}
 async function initPricing(){const box=$('[data-pricing]');if(!box)return;let u,plans;try{[u,plans]=await Promise.all([currentUser(),api('/plans').then(r=>r.plans)])}catch(e){toast(e.message,'error');return}box.querySelectorAll('[data-plan]').forEach(btn=>btn.addEventListener('click',async()=>{const plan=btn.dataset.plan;if(plan==='free')return go(u?'../app/dashboard.html':'../auth/cadastro.html');if(!u)return go('../auth/cadastro.html');try{const r=await api('/billing/checkout',{method:'POST',body:JSON.stringify({plan})});toast(r.message)}catch(e){toast(e.message,'error')}}))}
 async function initLogout(){const btn=$('[data-logout]');if(btn)btn.addEventListener('click',async()=>{await api('/auth/logout',{method:'POST'});go('../../index.html')})}
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
