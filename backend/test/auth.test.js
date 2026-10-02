@@ -88,7 +88,9 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.match(wizardHtml, /data-add-education/);
   assert.match(wizardHtml, /data-step-next/);
   assert.match(wizardHtml, /data-step-back/);
-  assert.equal((wizardHtml.match(/type="radio" name="template"/g) || []).length, 3);
+  assert.equal((wizardHtml.match(/type="radio" name="template"/g) || []).length, 5);
+  assert.match(wizardHtml, /data-preview-name/);
+  assert.match(wizardHtml, /name="experienceStartDate" type="date"/);
   assert.match(wizardHtml, /name="template"/);
   const dashboardResponse = await call('/pages/app/dashboard.html');
   const dashboardHtml = await dashboardResponse.text();
@@ -100,7 +102,8 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.equal((await plans.json()).plans.length, 3);
   const models = await call('/api/models');
   assert.equal(models.status, 200);
-  assert.equal((await models.json()).models.length, 3);
+  assert.equal((await models.json()).models.length, 5);
+  assert.match(await (await call('/js/app.js')).text(), /novo-curriculo\.html\?onboarding=1/);
   assert.equal((await call('/api/resumes')).status, 401);
 
   const email = `test-${crypto.randomUUID()}@example.test`;
@@ -128,7 +131,7 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
       data: {
         name: 'Test User',
         summary: 'Portfolio',
-        experiences: [{ role: 'Analyst', company: 'Example Co', period: '2022–2024', description: 'Reporting' }],
+        experiences: [{ role: 'Analyst', company: 'Example Co', startDate: '2022-01-01', endDate: '2024-02-01', description: 'Reporting' }],
         education: [{ course: 'Business', school: 'Example College', period: '2020–2022' }],
         skills: ['Excel', 'Communication']
       }
@@ -146,6 +149,7 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.equal(exported.status, 200);
   assert.match(exportedHtml, /paper template-classic/);
   assert.match(exportedHtml, /template-classic \.head/);
+  assert.match(exportedHtml, /2022/);
 
   const otherEmail = `other-${crypto.randomUUID()}@example.test`;
   const otherRegistration = await call('/api/auth/register', {
