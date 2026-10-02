@@ -92,6 +92,13 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.match(wizardHtml, /data-preview-name/);
   assert.match(wizardHtml, /name="experienceStartDate" type="date"/);
   assert.match(wizardHtml, /name="template"/);
+  const editorPage = await call('/pages/builder/editor.html');
+  const editorHtml = await editorPage.text();
+  assert.match(editorHtml, /data-editor-view="content"/);
+  assert.match(editorHtml, /data-editor-view="design"/);
+  assert.match(editorHtml, /data-save-status/);
+  assert.match(editorHtml, /data-zoom="fit"/);
+  assert.match(editorHtml, /data-template="creative"/);
   const dashboardResponse = await call('/pages/app/dashboard.html');
   const dashboardHtml = await dashboardResponse.text();
   assert.match(dashboardHtml, /data-home-link/);
