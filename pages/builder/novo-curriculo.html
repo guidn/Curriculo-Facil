@@ -1,1 +1,126 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Novo currículo — Currículo Fácil</title><link rel="stylesheet" href="../../css/style.css"><link rel="stylesheet" href="../../css/components/button.css"><link rel="stylesheet" href="../../css/components/card.css"><link rel="stylesheet" href="../../css/components/form.css"><link rel="stylesheet" href="../../css/pages/builder.css"></head><body><header class="site-header"><a class="brand" href="../../index.html"><span class="brand-mark">CF</span><span>Currículo<span class="brand-accent">Fácil</span></span></a><a class="button button-ghost button-small" href="../app/dashboard.html">← Painel</a></header><main class="app-main container"><div class="builder-head"><div><span class="eyebrow">Novo currículo</span><h1>Vamos começar.</h1><p>Preencha os dados básicos e escolha o modelo no editor.</p></div></div><div class="step-list"><span class="step active">1 · Informações</span><span class="step">2 · Experiência</span><span class="step">3 · Formação</span><span class="step">4 · Modelo</span></div><section class="card builder-card"><form data-resume-create><h2>Informações pessoais</h2><p>Essas informações aparecerão no topo do seu currículo.</p><div class="form-grid"><label class="form-field"><span>Nome completo</span><input name="name" placeholder="Seu nome" required></label><label class="form-field"><span>Cargo desejado</span><input name="role" placeholder="Ex.: Auxiliar administrativo"></label><label class="form-field"><span>E-mail</span><input name="email" type="email" placeholder="voce@email.com"></label><label class="form-field"><span>Telefone</span><input name="phone" placeholder="(11) 99999-9999"></label><label class="form-field"><span>Cidade</span><input name="city" placeholder="São Paulo - SP"></label><label class="form-field full"><span>Resumo profissional</span><textarea name="summary" placeholder="Conte brevemente sobre seu perfil profissional."></textarea></label><label class="form-field"><span>Nome do currículo</span><input name="title" value="Meu currículo profissional"></label></div><div class="builder-actions"><a class="button button-ghost" href="../app/dashboard.html">Cancelar</a><button class="button button-primary">Criar e abrir editor →</button></div></form></section></main><script src="../../js/app.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Novo currículo — Currículo Fácil</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/components/button.css">
+  <link rel="stylesheet" href="../../css/components/card.css">
+  <link rel="stylesheet" href="../../css/components/form.css">
+  <link rel="stylesheet" href="../../css/pages/builder.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="../app/dashboard.html" data-home-link data-guest-home="../../index.html" data-member-home="../app/dashboard.html" aria-label="Ir para início">
+      <span class="brand-mark">CF</span>
+      <span>Currículo<span class="brand-accent">Fácil</span></span>
+    </a>
+    <a class="button button-ghost button-small" href="../app/dashboard.html">← Painel</a>
+  </header>
+  <main class="app-main container">
+    <div class="builder-head">
+      <div>
+        <span class="eyebrow">Novo currículo</span>
+        <h1>Vamos começar.</h1>
+        <p>Avance pelas etapas. Seus dados serão guardados quando criar o currículo.</p>
+      </div>
+    </div>
+
+    <form class="card builder-card" data-resume-create novalidate>
+      <nav class="step-list" aria-label="Etapas do currículo">
+        <button class="step active" type="button" data-wizard-nav="0" aria-current="step">1 · Informações</button>
+        <button class="step" type="button" data-wizard-nav="1">2 · Experiência</button>
+        <button class="step" type="button" data-wizard-nav="2">3 · Formação</button>
+        <button class="step" type="button" data-wizard-nav="3">4 · Modelo</button>
+      </nav>
+      <div class="progress" role="progressbar" aria-label="Progresso do currículo" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1">
+        <span data-wizard-progress></span>
+      </div>
+
+      <section class="wizard-step" data-wizard-step="0" aria-labelledby="step-info-title">
+        <h2 id="step-info-title">Informações pessoais</h2>
+        <p>Essas informações aparecerão no topo do seu currículo.</p>
+        <div class="form-grid">
+          <label class="form-field"><span>Nome completo *</span><input name="name" placeholder="Seu nome" autocomplete="name" required minlength="2"></label>
+          <label class="form-field"><span>Cargo desejado</span><input name="role" placeholder="Ex.: Auxiliar administrativo"></label>
+          <label class="form-field"><span>E-mail</span><input name="email" type="email" placeholder="voce@email.com" autocomplete="email"></label>
+          <label class="form-field"><span>Telefone</span><input name="phone" type="tel" placeholder="(11) 99999-9999" autocomplete="tel"></label>
+          <label class="form-field"><span>Cidade</span><input name="city" placeholder="São Paulo - SP"></label>
+          <label class="form-field"><span>Nome do currículo</span><input name="title" value="Meu currículo profissional" maxlength="100"></label>
+          <label class="form-field full"><span>Resumo profissional</span><textarea name="summary" rows="4" placeholder="Conte brevemente sobre seu perfil profissional."></textarea></label>
+        </div>
+      </section>
+
+      <section class="wizard-step" data-wizard-step="1" aria-labelledby="step-experience-title" hidden>
+        <h2 id="step-experience-title">Experiência profissional</h2>
+        <p>Adicione seus trabalhos anteriores. Esta etapa é opcional.</p>
+        <div class="repeat-list" data-experience-list></div>
+        <template data-experience-template>
+          <fieldset class="repeat-entry" data-experience-entry>
+            <legend>Experiência</legend>
+            <div class="form-grid">
+              <label class="form-field"><span>Cargo</span><input name="experienceRole" placeholder="Ex.: Assistente administrativo"></label>
+              <label class="form-field"><span>Empresa</span><input name="experienceCompany" placeholder="Nome da empresa"></label>
+              <label class="form-field full"><span>Período</span><input name="experiencePeriod" placeholder="Ex.: Jan/2022 – Mar/2024"></label>
+              <label class="form-field full"><span>Atividades e resultados</span><textarea name="experienceDescription" rows="3" placeholder="Descreva suas principais atividades."></textarea></label>
+            </div>
+            <button class="button button-ghost button-small" type="button" data-remove-entry>Remover experiência</button>
+          </fieldset>
+        </template>
+        <button class="button button-secondary" type="button" data-add-experience>＋ Adicionar experiência</button>
+      </section>
+
+      <section class="wizard-step" data-wizard-step="2" aria-labelledby="step-education-title" hidden>
+        <h2 id="step-education-title">Formação</h2>
+        <p>Inclua seus estudos e cursos relevantes. Esta etapa também é opcional.</p>
+        <div class="repeat-list" data-education-list></div>
+        <template data-education-template>
+          <fieldset class="repeat-entry" data-education-entry>
+            <legend>Formação</legend>
+            <div class="form-grid">
+              <label class="form-field"><span>Curso ou formação</span><input name="educationCourse" placeholder="Ex.: Administração"></label>
+              <label class="form-field"><span>Instituição</span><input name="educationSchool" placeholder="Nome da instituição"></label>
+              <label class="form-field full"><span>Período</span><input name="educationPeriod" placeholder="Ex.: 2020 – 2023"></label>
+            </div>
+            <button class="button button-ghost button-small" type="button" data-remove-entry>Remover formação</button>
+          </fieldset>
+        </template>
+        <button class="button button-secondary" type="button" data-add-education>＋ Adicionar formação</button>
+      </section>
+
+      <section class="wizard-step" data-wizard-step="3" aria-labelledby="step-template-title" hidden>
+        <h2 id="step-template-title">Escolha um modelo</h2>
+        <p>São modelos simples para testar. Você pode trocar o modelo no editor.</p>
+        <div class="template-grid">
+          <label class="template-card">
+            <input type="radio" name="template" value="modern" checked>
+            <span class="template-preview template-preview-modern" aria-hidden="true"><i></i><i></i><i></i></span>
+            <strong>Moderno</strong><small>Roxo, limpo e atual</small>
+          </label>
+          <label class="template-card">
+            <input type="radio" name="template" value="classic">
+            <span class="template-preview template-preview-classic" aria-hidden="true"><i></i><i></i><i></i></span>
+            <strong>Clássico</strong><small>Azul e tradicional</small>
+          </label>
+          <label class="template-card">
+            <input type="radio" name="template" value="minimal">
+            <span class="template-preview template-preview-minimal" aria-hidden="true"><i></i><i></i><i></i></span>
+            <strong>Minimal</strong><small>Verde e discreto</small>
+          </label>
+        </div>
+      </section>
+
+      <div class="builder-actions wizard-actions">
+        <a class="button button-ghost" href="../app/dashboard.html" data-wizard-cancel>Cancelar</a>
+        <div class="wizard-navigation">
+          <button class="button button-secondary" type="button" data-step-back hidden>← Voltar</button>
+          <button class="button button-primary" type="button" data-step-next>Continuar →</button>
+          <button class="button button-primary" type="submit" data-step-submit hidden>Criar e abrir editor →</button>
+        </div>
+      </div>
+    </form>
+  </main>
+  <script src="../../js/app.js"></script>
+</body>
+</html>
