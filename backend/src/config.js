@@ -20,5 +20,5 @@ module.exports = {
   cookieSecure: env.COOKIE_SECURE === undefined ? (env.NODE_ENV || 'development') === 'production' : String(env.COOKIE_SECURE) === 'true',
   resetTokenMinutes: Number(env.RESET_TOKEN_MINUTES || 30),
   rootDir: path.resolve(__dirname, '../..'),
-  dbFile: path.resolve(__dirname, '../data/curriculo-facil.sqlite')
+  dbFile: path.resolve(env.DB_FILE || path.resolve(__dirname, '../data/curriculo-facil.sqlite'))
 };
