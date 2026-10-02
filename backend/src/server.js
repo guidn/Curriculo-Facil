@@ -11,6 +11,8 @@ const { setSession, clearSession, getUser, requireUser, parseCookies } = require
 const MIME = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.txt':'text/plain; charset=utf-8','.svg':'image/svg+xml' };
 const rate = new Map();
 const RATE_WINDOW = 60_000, RATE_MAX = 120;
+const AUTH_RATE_WINDOW = 15 * 60_000, AUTH_RATE_MAX = 10;
+const ACCENTS = new Set(['#742cff','#1769aa','#16805c','#d35f12']);
 
 function json(res, status, data) { res.statusCode=status; res.setHeader('Content-Type','application/json; charset=utf-8'); res.end(JSON.stringify(data)); }
 function html(res, status, data) { res.statusCode=status; res.setHeader('Content-Type','text/html; charset=utf-8'); res.end(data); }
@@ -32,12 +34,32 @@ function resumeHtml(r, publicMode=false, plan='free') {
 }
 function sendStatic(req,res,urlPath) {
   let pathname = decodeURIComponent(urlPath === '/' ? '/index.html' : urlPath);
-  const full = path.normalize(path.join(config.rootDir, pathname));
-  if (!full.startsWith(config.rootDir) || !fs.existsSync(full) || fs.statSync(full).isDirectory()) return false;
+  const full = path.resolve(config.rootDir, '.' + pathname);
+  if (full !== config.rootDir && !full.startsWith(config.rootDir + path.sep)) return false;
+  if (!fs.existsSync(full) || fs.statSync(full).isDirectory()) return false;
   const ext=path.extname(full); res.statusCode=200; res.setHeader('Content-Type',MIME[ext]||'application/octet-stream'); fs.createReadStream(full).pipe(res); return true;
 }
-function originAllowed(req) { const origin=req.headers.origin; return !origin || origin===config.appUrl || origin==='http://127.0.0.1:'+config.port || origin==='http://localhost:'+config.port; }
-function limited(req,res) { const ip=req.socket.remoteAddress||'unknown'; const n=Date.now(); const r=rate.get(ip)||{start:n,count:0}; if(n-r.start>RATE_WINDOW){r.start=n;r.count=0;} r.count++; rate.set(ip,r); if(r.count>RATE_MAX){json(res,429,{error:'Muitas requisições. Tente novamente em instantes.'});return true;} return false; }
+function originAllowed(req) {
+  const origin=req.headers.origin;
+  if (!origin) return !['POST','PUT','PATCH','DELETE'].includes(req.method);
+  return origin===config.appUrl || origin==='http://127.0.0.1:'+config.port || origin==='http://localhost:'+config.port;
+}
+let rateChecks = 0;
+function limited(req,res) {
+  const ip=req.socket.remoteAddress||'unknown', n=Date.now(), pathname=new URL(req.url,config.appUrl).pathname;
+  const buckets=[[`all:${ip}`,RATE_WINDOW,RATE_MAX]];
+  if(req.method==='POST'&&/^\/api\/auth\/(login|register|forgot-password|reset-password)$/.test(pathname)) buckets.push([`auth:${ip}:${pathname}`,AUTH_RATE_WINDOW,AUTH_RATE_MAX]);
+  let blocked=false;
+  for(const [key,window,max] of buckets) {
+    const r=rate.get(key)||{start:n,count:0,window};
+    if(n-r.start>window){r.start=n;r.count=0;}
+    r.count++;r.window=window;rate.set(key,r);
+    if(r.count>max)blocked=true;
+  }
+  if(rate.size>5000||(++rateChecks%128===0)) for(const [key,value] of rate) if(n-value.start>value.window) rate.delete(key);
+  if(blocked){json(res,429,{error:'Muitas requisições. Tente novamente em instantes.'});return true;}
+  return false;
+}
 
 async function route(req,res) {
   if (limited(req,res)) return;
@@ -63,16 +85,16 @@ async function route(req,res) {
         return json(res,200,{message:'Se o e-mail existir, um link de recuperação será disponibilizado.', ...(devToken?{developmentToken:devToken}: {})});
       }
       if (method==='POST' && p==='/api/auth/reset-password') {
-        const b=await body(req), raw=String(b.token||''), password=String(b.password||''); if(password.length<8) return json(res,400,{error:'A senha deve ter pelo menos 8 caracteres.'}); const row=db.prepare(`SELECT * FROM password_resets WHERE token_hash=? AND used_at IS NULL AND expires_at > datetime('now')`).get(hashToken(raw)); if(!row) return json(res,400,{error:'Token inválido ou expirado.'}); db.prepare('UPDATE users SET password_hash=?,updated_at=? WHERE id=?').run(hashPassword(password),now(),row.user_id); db.prepare('UPDATE password_resets SET used_at=? WHERE id=?').run(now(),row.id); return json(res,200,{ok:true});
+        const b=await body(req), raw=String(b.token||''), password=String(b.password||''); if(password.length<8) return json(res,400,{error:'A senha deve ter pelo menos 8 caracteres.'}); const row=db.prepare(`SELECT * FROM password_resets WHERE token_hash=? AND used_at IS NULL AND expires_at > datetime('now')`).get(hashToken(raw)); if(!row) return json(res,400,{error:'Token inválido ou expirado.'}); db.prepare('UPDATE users SET password_hash=?,updated_at=? WHERE id=?').run(hashPassword(password),now(),row.user_id); db.prepare('DELETE FROM sessions WHERE user_id=?').run(row.user_id); db.prepare('UPDATE password_resets SET used_at=? WHERE id=?').run(now(),row.id); return json(res,200,{ok:true});
       }
 
-      const user=requireUser(req,res); if(!user) return json(res,401,{error:'Faça login para continuar.'});
-      if(method==='GET' && p==='/api/usage'){ const u=usageRow(user.id), plan=planFor(user); return json(res,200,{plan,usage:{exports:u.exports,shares:u.shares,resumeCreates:u.resume_creates},remaining:{exports:plan.dailyLimit===null?null:Math.max(0,plan.dailyLimit-u.exports),shares:plan.dailyLimit===null?null:Math.max(0,plan.dailyLimit-u.shares),resumeCreates:plan.dailyLimit===null?null:Math.max(0,plan.dailyLimit-u.resume_creates)}}); }
       if(method==='GET' && p==='/api/models') return json(res,200,{models:[{key:'modern',name:'Moderno',description:'Visual limpo com destaque roxo.'},{key:'classic',name:'Clássico',description:'Estrutura tradicional e objetiva.'},{key:'minimal',name:'Minimal',description:'Tipografia leve e bastante espaço.'}]});
       if(method==='GET' && p==='/api/plans') return json(res,200,{plans:Object.values(PLANS)});
+      const user=requireUser(req,res); if(!user) return json(res,401,{error:'Faça login para continuar.'});
+      if(method==='GET' && p==='/api/usage'){ const u=usageRow(user.id), plan=planFor(user); return json(res,200,{plan,usage:{exports:u.exports,shares:u.shares,resumeCreates:u.resume_creates},remaining:{exports:plan.dailyLimit===null?null:Math.max(0,plan.dailyLimit-u.exports),shares:plan.dailyLimit===null?null:Math.max(0,plan.dailyLimit-u.shares),resumeCreates:plan.dailyLimit===null?null:Math.max(0,plan.dailyLimit-u.resume_creates)}}); }
       if(method==='GET' && p==='/api/resumes') { const rows=db.prepare('SELECT * FROM resumes WHERE user_id=? ORDER BY updated_at DESC').all(user.id); return json(res,200,{resumes:rows.map(resumeData)}); }
-      if(method==='POST' && p==='/api/resumes') { if(!consume(user,'resume_creates')) return json(res,429,{error:'Seu limite diário foi atingido. Confira os planos para aumentar o limite.'}); const b=await body(req), title=String(b.title||'Meu currículo').trim().slice(0,100)||'Meu currículo'; const data=typeof b.data==='object'&&b.data?b.data:{}; const rid=id(),t=now(); db.prepare('INSERT INTO resumes(id,user_id,title,template,accent,data_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)').run(rid,user.id,title,String(b.template||'modern'),String(b.accent||'#742cff'),JSON.stringify(data),t,t); return json(res,201,{resume:resumeData(db.prepare('SELECT * FROM resumes WHERE id=?').get(rid))}); }
-      const match=p.match(/^\/api\/resumes\/([^/]+)$/); if(match){ const rid=match[1]; const row=db.prepare('SELECT * FROM resumes WHERE id=? AND user_id=?').get(rid,user.id); if(!row) return json(res,404,{error:'Currículo não encontrado.'}); if(method==='GET') return json(res,200,{resume:resumeData(row)}); if(method==='PATCH'){ const b=await body(req), current=resumeData(row), nextData=typeof b.data==='object'&&b.data?b.data:current.data, title=String(b.title??current.title).trim().slice(0,100)||current.title, template=String(b.template??current.template), accent=String(b.accent??current.accent); db.prepare('UPDATE resumes SET title=?,template=?,accent=?,data_json=?,updated_at=? WHERE id=?').run(title,template,accent,JSON.stringify(nextData),now(),rid); return json(res,200,{resume:resumeData(db.prepare('SELECT * FROM resumes WHERE id=?').get(rid))}); } if(method==='DELETE'){db.prepare('DELETE FROM resumes WHERE id=?').run(rid); return noContent(res);} }
+      if(method==='POST' && p==='/api/resumes') { if(!consume(user,'resume_creates')) return json(res,429,{error:'Seu limite diário foi atingido. Confira os planos para aumentar o limite.'}); const b=await body(req), title=String(b.title||'Meu currículo').trim().slice(0,100)||'Meu currículo', template=String(b.template||'modern'), accent=String(b.accent||'#742cff'); if(!['modern','classic','minimal'].includes(template)||!ACCENTS.has(accent))return json(res,400,{error:'Modelo ou cor inválidos.'}); const data=typeof b.data==='object'&&b.data?b.data:{}; const rid=id(),t=now(); db.prepare('INSERT INTO resumes(id,user_id,title,template,accent,data_json,created_at,updated_at) VALUES(?,?,?,?,?,?,?,?)').run(rid,user.id,title,template,accent,JSON.stringify(data),t,t); return json(res,201,{resume:resumeData(db.prepare('SELECT * FROM resumes WHERE id=?').get(rid))}); }
+      const match=p.match(/^\/api\/resumes\/([^/]+)$/); if(match){ const rid=match[1]; const row=db.prepare('SELECT * FROM resumes WHERE id=? AND user_id=?').get(rid,user.id); if(!row) return json(res,404,{error:'Currículo não encontrado.'}); if(method==='GET') return json(res,200,{resume:resumeData(row)}); if(method==='PATCH'){ const b=await body(req), current=resumeData(row), nextData=typeof b.data==='object'&&b.data?b.data:current.data, title=String(b.title??current.title).trim().slice(0,100)||current.title, template=String(b.template??current.template), accent=String(b.accent??current.accent); if(!['modern','classic','minimal'].includes(template)||!ACCENTS.has(accent))return json(res,400,{error:'Modelo ou cor inválidos.'}); db.prepare('UPDATE resumes SET title=?,template=?,accent=?,data_json=?,updated_at=? WHERE id=?').run(title,template,accent,JSON.stringify(nextData),now(),rid); return json(res,200,{resume:resumeData(db.prepare('SELECT * FROM resumes WHERE id=?').get(rid))}); } if(method==='DELETE'){db.prepare('DELETE FROM resumes WHERE id=?').run(rid); return noContent(res);} }
       const exportMatch=p.match(/^\/api\/resumes\/([^/]+)\/export$/); if(method==='POST'&&exportMatch){ const row=db.prepare('SELECT * FROM resumes WHERE id=? AND user_id=?').get(exportMatch[1],user.id); if(!row) return json(res,404,{error:'Currículo não encontrado.'}); if(!consume(user,'exports')) return json(res,429,{error:'Seu limite diário de exportações foi atingido.'}); return html(res,200,resumeHtml(resumeData(row), false, user.plan)); }
       const shareMatch=p.match(/^\/api\/resumes\/([^/]+)\/share$/); if(method==='POST'&&shareMatch){ const row=db.prepare('SELECT * FROM resumes WHERE id=? AND user_id=?').get(shareMatch[1],user.id); if(!row) return json(res,404,{error:'Currículo não encontrado.'}); if(!consume(user,'shares')) return json(res,429,{error:'Seu limite diário de compartilhamentos foi atingido.'}); const raw=token(18),t=now(); db.prepare('UPDATE resumes SET shared_token=?,shared_at=? WHERE id=?').run(raw,t,row.id); return json(res,200,{url:`${config.appUrl}/share/${raw}`}); }
       if(method==='GET'&&p==='/api/profile'){return json(res,200,{user:cleanUser(user)})}
