@@ -56,7 +56,7 @@ function limited(req,res) {
     r.count++;r.window=window;rate.set(key,r);
     if(r.count>max)blocked=true;
   }
-  if(rate.size>5000||(++rateChecks%128===0)) for(const [key,value] of rate) if(n-value.start>value.window) rate.delete(key);
+  if(rate.size>5000||(++rateChecks%128===0)) { for(const [key,value] of rate) if(n-value.start>value.window) rate.delete(key); while(rate.size>5000) rate.delete(rate.keys().next().value); }
   if(blocked){json(res,429,{error:'Muitas requisições. Tente novamente em instantes.'});return true;}
   return false;
 }
