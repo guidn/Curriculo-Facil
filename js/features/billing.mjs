@@ -1,0 +1,5 @@
+import { $, api, currentUser, toast, go } from '../shared.mjs';
+
+export async function initModels(){const box=$('[data-models]');if(!box)return;if(!(await currentUser()))return go('../auth/login.html');const r=await api('/models');box.innerHTML=r.models.map(m=>`<article class="model-card"><div class="model-preview ${m.key}"><div></div></div><div class="model-info"><h3>${m.name}</h3><p>${m.description}</p><a class="button button-primary button-small" href="novo-curriculo.html?template=${m.key}">Usar modelo</a></div></article>`).join('')}
+
+export async function initPricing(){const box=$('[data-pricing]');if(!box)return;let u,plans;try{[u,plans]=await Promise.all([currentUser(),api('/plans').then(r=>r.plans)])}catch(e){toast(e.message,'error');return}box.querySelectorAll('[data-plan]').forEach(btn=>btn.addEventListener('click',async()=>{const plan=btn.dataset.plan;if(plan==='free')return go(u?'../app/dashboard.html':'../auth/cadastro.html');if(!u)return go('../auth/cadastro.html');try{const r=await api('/billing/checkout',{method:'POST',body:JSON.stringify({plan})});toast(r.message)}catch(e){toast(e.message,'error')}}))}

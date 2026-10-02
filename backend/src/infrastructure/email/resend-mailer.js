@@ -1,4 +1,4 @@
-const config = require('../config');
+const config = require('../../config');
 
 function configured() { return Boolean(config.resendApiKey && config.emailFrom); }
 
@@ -19,4 +19,3 @@ async function sendPasswordResetCode(email, code) {
 }
 
 module.exports = { configured, sendPasswordResetCode };
-

@@ -1,7 +1,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { DatabaseSync } = require('node:sqlite');
-const config = require('./config');
+const config = require('../../config');
 
 fs.mkdirSync(path.dirname(config.dbFile), { recursive: true });
 const db = new DatabaseSync(config.dbFile);

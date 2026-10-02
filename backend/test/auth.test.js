@@ -80,7 +80,7 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   const homeHtml = await home.text();
   assert.match(homeHtml, /Currículo Fácil/);
   assert.match(homeHtml, /data-public-home/);
-  assert.match(homeHtml, /js\/app.js/);
+  assert.match(homeHtml, /js\/app\.mjs/);
   const wizardPage = await call('/pages/builder/novo-curriculo.html');
   const wizardHtml = await wizardPage.text();
   assert.equal((wizardHtml.match(/data-wizard-step=/g) || []).length, 4);
@@ -106,10 +106,22 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.match(profileHtml, /Informações para o currículo/);
   assert.match(profileHtml, /data-editor-experiences/);
   assert.match(profileHtml, /data-editor-education/);
+  assert.match(profileHtml, /profile-session-card/);
+  assert.match(profileHtml, /profile-brand-mark/);
+  assert.doesNotMatch(profileHtml.slice(0,profileHtml.indexOf('<main')), /data-logout/);
+  const recoveryPage = await call('/pages/auth/esqueci-senha.html');
+  const recoveryHtml = await recoveryPage.text();
+  assert.match(recoveryHtml, /data-reset-next/);
+  assert.match(recoveryHtml, /app\.mjs/);
+  const resetPage = await call('/pages/auth/reset-senha.html');
+  assert.match(await resetPage.text(), /autocomplete="one-time-code"/);
   const dashboardResponse = await call('/pages/app/dashboard.html');
   const dashboardHtml = await dashboardResponse.text();
   assert.match(dashboardHtml, /data-home-link/);
   assert.match(dashboardHtml, /data-member-home="dashboard.html"/);
+  const browserModule = await call('/js/app.mjs');
+  assert.match(browserModule.headers.get('content-type'), /javascript/);
+  assert.match(await browserModule.text(), /features\/auth\.mjs/);
 
   const plans = await call('/api/plans');
   assert.equal(plans.status, 200);
@@ -117,7 +129,10 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   const models = await call('/api/models');
   assert.equal(models.status, 200);
   assert.equal((await models.json()).models.length, 5);
-  assert.match(await (await call('/js/app.js')).text(), /novo-curriculo\.html\?onboarding=1/);
+  assert.match(profileHtml, /profile-session-card/);
+  assert.match(profileHtml, /profile-brand-mark/);
+  const authClient = await call('/js/features/auth.mjs');
+  assert.match(await authClient.text(), /novo-curriculo\.html\?onboarding=1/);
   assert.equal((await call('/api/resumes')).status, 401);
 
   const email = `test-${crypto.randomUUID()}@example.test`;
@@ -265,4 +280,3 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   }
   assert.equal(rateResponses.at(-1).status, 429, 'login attempts should be rate limited');
 });
-

@@ -14,8 +14,9 @@ function verifyPassword(password, stored) {
 }
 
 function token(bytes = 32) { return crypto.randomBytes(bytes).toString('hex'); }
+function randomInt(min,max) { return crypto.randomInt(min,max); }
 function id() { return crypto.randomUUID(); }
 function hashToken(value) { return crypto.createHash('sha256').update(value).digest('hex'); }
 function today() { return new Date().toISOString().slice(0, 10); }
 
-module.exports = { hashPassword, verifyPassword, token, id, hashToken, today };
+module.exports = { hashPassword, verifyPassword, token, randomInt, id, hashToken, today };
