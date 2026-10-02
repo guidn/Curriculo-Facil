@@ -16,6 +16,7 @@ let tempDir;
 let dbFile;
 let serverUrl;
 let child;
+let inspectionDb;
 
 function wait(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -69,6 +70,7 @@ after(async () => {
     child.kill();
     await Promise.race([once(child, 'exit'), wait(2000)]);
   }
+  if (inspectionDb) inspectionDb.close();
   if (tempDir) rmSync(tempDir, { recursive: true, force: true });
 });
 
@@ -115,6 +117,15 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.equal(resume.template, 'classic');
   assert.equal(resume.accent, '#1769aa');
 
+  const otherEmail = `other-${crypto.randomUUID()}@example.test`;
+  const otherRegistration = await call('/api/auth/register', {
+    method: 'POST',
+    payload: { name: 'Other User', email: otherEmail, password: 'AnotherPassword123' }
+  });
+  const otherCookie = otherRegistration.headers.get('set-cookie')?.match(/^cf_session=[^;]+/)?.[0];
+  assert.equal(otherRegistration.status, 201);
+  assert.equal((await call(`/api/resumes/${resume.id}`, { cookie: otherCookie })).status, 404);
+
   const invalid = await call('/api/resumes', {
     method: 'POST',
     cookie,
@@ -132,12 +143,12 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   });
   assert.equal(csrf.status, 403);
 
-  const db = new DatabaseSync(dbFile);
-  const user = db.prepare('SELECT password_hash FROM users WHERE email=?').get(email);
+  inspectionDb = new DatabaseSync(dbFile);
+  const user = inspectionDb.prepare('SELECT password_hash FROM users WHERE email=?').get(email);
   assert.ok(user.password_hash);
   assert.notEqual(user.password_hash, password);
   const sessionToken = cookie.slice('cf_session='.length);
-  const session = db.prepare('SELECT token_hash FROM sessions WHERE user_id=(SELECT id FROM users WHERE email=?)').get(email);
+  const session = inspectionDb.prepare('SELECT token_hash FROM sessions WHERE user_id=(SELECT id FROM users WHERE email=?)').get(email);
   assert.equal(session.token_hash, crypto.createHash('sha256').update(sessionToken).digest('hex'));
 
   const forgot = await call('/api/auth/forgot-password', {
@@ -167,7 +178,11 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
     payload: { token: developmentToken, password: 'AnotherPassword123' }
   });
   assert.equal(usedToken.status, 400, 'a recovery token can only be used once');
-  db.close();
+  const logout = await call('/api/auth/logout', { method: 'POST', cookie: loginCookie });
+  assert.equal(logout.status, 200);
+  assert.equal((await call('/api/auth/me', { cookie: loginCookie })).status, 401, 'logout revokes the session');
+  inspectionDb.close();
+  inspectionDb = null;
 
   const rateResponses = [];
   for (let i = 0; i < 10; i++) {
