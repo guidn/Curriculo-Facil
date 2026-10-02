@@ -28,7 +28,13 @@ Para desenvolvimento:
 npm run dev
 ```
 
-O arquivo `.env.example` mostra as configurações disponíveis. Copie para `.env` se quiser alterar porta, URL ou duração de sessão.
+O arquivo `.env.example` mostra as configurações disponíveis. Copie para `.env` se quiser alterar porta, URL ou duração de sessão. Em produção (`NODE_ENV=production`), o cookie de sessão usa `Secure` por padrão; mantenha HTTPS habilitado.
+
+## Verificação
+
+`npm run check` verifica a sintaxe dos arquivos JavaScript. O repositório não contém uma suíte de testes automatizados; esse comando não cobre integração de rotas, banco de dados ou navegador.
+
+O SQLite é criado automaticamente no primeiro início e fica em `backend/data/`. O arquivo local do banco é ignorado pelo Git para evitar versionar dados de usuários.
 
 ## Funcionalidades implementadas
 
@@ -49,4 +55,4 @@ O arquivo `.env.example` mostra as configurações disponíveis. Copie para `.en
 
 ## O que ainda depende de conta externa
 
-O código está preparado para conectar um gateway de pagamento e uma rede de anúncios, mas não usa credenciais fictícias nem finge que pagamentos reais já estão ativos. Para produção, é necessário criar as contas nesses serviços, configurar as credenciais e implementar os webhooks do provedor escolhido.
+O checkout real e a entrega de e-mails de recuperação ainda dependem de serviços externos. O fluxo de redefinição gera um token somente em desenvolvimento; em produção é necessário integrar um provedor de e-mail. O gateway de pagamento e a rede de anúncios também não estão conectados. Para pagamentos reais, configure as credenciais e implemente os webhooks do provedor escolhido.
