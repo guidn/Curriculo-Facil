@@ -77,7 +77,10 @@ after(async () => {
 test('public pages, authentication, sessions, recovery and resume ownership', async () => {
   const home = await call('/');
   assert.equal(home.status, 200);
-  assert.match(await home.text(), /Currículo Fácil/);
+  const homeHtml = await home.text();
+  assert.match(homeHtml, /Currículo Fácil/);
+  assert.match(homeHtml, /data-public-home/);
+  assert.match(homeHtml, /js\/app.js/);
   const wizardPage = await call('/pages/builder/novo-curriculo.html');
   const wizardHtml = await wizardPage.text();
   assert.equal((wizardHtml.match(/data-wizard-step=/g) || []).length, 4);
