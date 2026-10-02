@@ -1,1 +1,81 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Editor — Currículo Fácil</title><link rel="stylesheet" href="../../css/style.css"><link rel="stylesheet" href="../../css/components/button.css"><link rel="stylesheet" href="../../css/components/form.css"><link rel="stylesheet" href="../../css/pages/editor.css"></head><body class="editor-page"><header class="editor-top"><div class="editor-top-left"><a class="brand" href="../app/dashboard.html" data-home-link data-guest-home="../../index.html" data-member-home="../app/dashboard.html"><span class="brand-mark">CF</span><span>Currículo<span class="brand-accent">Fácil</span></span></a><span class="editor-name">Editor</span></div><div class="editor-top-right"><button class="button button-ghost button-small" data-share>Compartilhar</button><button class="button button-secondary button-small" data-export>Exportar PDF</button><button class="button button-primary button-small" data-save>Salvar</button></div></header><div class="editor-workspace"><aside class="editor-panel"><form data-editor-form><label class="form-field"><span>Nome do currículo</span><input name="title"></label><label class="form-field"><span>Nome</span><input name="name"></label><label class="form-field"><span>Cargo</span><input name="role"></label><label class="form-field"><span>E-mail</span><input name="email" type="email"></label><label class="form-field"><span>Telefone</span><input name="phone" type="tel"></label><label class="form-field"><span>Cidade</span><input name="city"></label><label class="form-field"><span>Resumo</span><textarea name="summary"></textarea></label><h3>Experiências</h3><div data-editor-experiences></div><button type="button" class="button button-secondary button-small" data-editor-add="experience">＋ Adicionar experiência</button><h3>Formação</h3><div data-editor-education></div><button type="button" class="button button-secondary button-small" data-editor-add="education">＋ Adicionar formação</button><label class="form-field"><span>Habilidades</span><input name="skills" placeholder="Separe por vírgulas"></label><input type="hidden" name="template" value="modern"><input type="hidden" name="accent" value="#742cff"></form></aside><main class="editor-canvas"><article class="paper" data-paper></article></main><aside class="editor-panel right"><h3>Design</h3><div class="editor-section"><span class="small muted">Cor de destaque</span><div class="color-options"><button type="button" class="color-choice" data-color="#742cff" style="--c:#742cff" aria-label="Roxo"></button><button type="button" class="color-choice" data-color="#1769aa" style="--c:#1769aa" aria-label="Azul"></button><button type="button" class="color-choice" data-color="#16805c" style="--c:#16805c" aria-label="Verde"></button><button type="button" class="color-choice" data-color="#1f3a5f" style="--c:#1f3a5f" aria-label="Marinho"></button><button type="button" class="color-choice" data-color="#d35f12" style="--c:#d35f12" aria-label="Laranja"></button></div></div><div class="editor-section"><span class="small muted">Modelo</span><div class="template-options"><button type="button" class="template-choice" data-template="modern">Moderno</button><button type="button" class="template-choice" data-template="classic">Clássico</button><button type="button" class="template-choice" data-template="minimal">Minimal</button><button type="button" class="template-choice" data-template="executive">Executivo</button><button type="button" class="template-choice" data-template="creative">Criativo</button></div></div></aside></div><script src="../../js/app.js"></script></body></html>
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Editor — Currículo Fácil</title>
+  <link rel="stylesheet" href="../../css/style.css">
+  <link rel="stylesheet" href="../../css/components/button.css">
+  <link rel="stylesheet" href="../../css/components/form.css">
+  <link rel="stylesheet" href="../../css/pages/editor.css">
+</head>
+<body class="editor-page">
+  <header class="editor-top">
+    <div class="editor-top-left">
+      <a class="brand" href="../app/dashboard.html" data-home-link data-guest-home="../../index.html" data-member-home="../app/dashboard.html" aria-label="Voltar ao painel"><span class="brand-mark">CF</span><span>Currículo<span class="brand-accent">Fácil</span></span></a>
+      <span class="editor-divider"></span><span class="editor-name">Editor de currículo</span>
+    </div>
+    <div class="editor-top-right">
+      <span class="editor-status" data-save-status role="status" aria-live="polite">Todas as alterações salvas</span>
+      <button class="button button-ghost button-small" type="button" data-share>Compartilhar</button>
+      <button class="button button-secondary button-small" type="button" data-export>Exportar PDF</button>
+      <button class="button button-primary button-small save-button" type="button" data-save>Salvar</button>
+    </div>
+  </header>
+  <nav class="editor-tabs" aria-label="Painel do editor">
+    <button type="button" class="editor-tab active" data-editor-view="content" aria-selected="true">✎ <span>Conteúdo</span></button>
+    <button type="button" class="editor-tab" data-editor-view="design" aria-selected="false">◈ <span>Aparência</span></button>
+    <span class="editor-tabs-hint">A prévia acompanha suas alterações</span>
+  </nav>
+  <div class="editor-workspace" data-active-view="content">
+    <aside class="editor-panel content-panel" data-content-panel>
+      <div class="editor-panel-heading"><span class="eyebrow">Seu currículo</span><h1>Conteúdo</h1><p>Preencha os campos e acompanhe o resultado ao lado.</p></div>
+      <form data-editor-form>
+        <details class="editor-group" open>
+          <summary><span class="group-icon">01</span><span><strong>Dados pessoais</strong><small>Nome, contato e apresentação</small></span></summary>
+          <div class="group-fields">
+            <label class="form-field"><span>Nome do currículo</span><input name="title" placeholder="Meu currículo profissional"></label>
+            <label class="form-field"><span>Nome completo</span><input name="name" autocomplete="name"></label>
+            <label class="form-field"><span>Cargo desejado</span><input name="role" placeholder="Ex.: Analista financeiro"></label>
+            <div class="editor-two-fields"><label class="form-field"><span>E-mail</span><input name="email" type="email" autocomplete="email"></label><label class="form-field"><span>Telefone</span><input name="phone" type="tel" autocomplete="tel"></label></div>
+            <label class="form-field"><span>Cidade</span><input name="city" placeholder="São Paulo - SP"></label>
+            <label class="form-field"><span>Resumo profissional</span><textarea name="summary" rows="4" placeholder="Destaque sua experiência, seus pontos fortes e objetivos."></textarea><small class="field-hint">Dica: mantenha o resumo curto e específico.</small></label>
+          </div>
+        </details>
+        <details class="editor-group">
+          <summary><span class="group-icon">02</span><span><strong>Experiência</strong><small>Empregos e resultados</small></span></summary>
+          <div class="group-fields"><div data-editor-experiences></div><button type="button" class="button button-secondary button-small add-entry" data-editor-add="experience">＋ Adicionar experiência</button></div>
+        </details>
+        <details class="editor-group">
+          <summary><span class="group-icon">03</span><span><strong>Formação</strong><small>Estudos e cursos relevantes</small></span></summary>
+          <div class="group-fields"><div data-editor-education></div><button type="button" class="button button-secondary button-small add-entry" data-editor-add="education">＋ Adicionar formação</button></div>
+        </details>
+        <details class="editor-group">
+          <summary><span class="group-icon">04</span><span><strong>Habilidades</strong><small>Competências e ferramentas</small></span></summary>
+          <div class="group-fields"><label class="form-field"><span>Habilidades</span><input name="skills" placeholder="Ex.: Excel, comunicação, vendas"></label><small class="field-hint">Separe cada habilidade com vírgula.</small></div>
+        </details>
+        <input type="hidden" name="template" value="modern"><input type="hidden" name="accent" value="#742cff">
+      </form>
+    </aside>
+    <main class="editor-canvas">
+      <div class="preview-toolbar"><div><strong>Prévia</strong><span>A4 · Atualizada automaticamente</span></div><div class="zoom-control" aria-label="Zoom da prévia"><button type="button" data-zoom="out" aria-label="Diminuir zoom">−</button><span data-zoom-label>100%</span><button type="button" data-zoom="in" aria-label="Aumentar zoom">＋</button><button type="button" data-zoom="fit" aria-label="Ajustar à tela">Ajustar</button></div></div>
+      <div class="paper-stage"><article class="paper" data-paper aria-label="Prévia do currículo"></article></div>
+    </main>
+    <aside class="editor-panel right design-panel" data-design-panel>
+      <div class="editor-panel-heading"><span class="eyebrow">Personalize</span><h2>Aparência</h2><p>Escolha o estilo que combina com sua área.</p></div>
+      <section class="editor-section"><div class="section-heading"><strong>Modelo</strong><small>5 estilos disponíveis</small></div><div class="template-options">
+        <button type="button" class="template-choice" data-template="modern"><i class="template-swatch modern-swatch"></i><span><strong>Moderno</strong><small>Limpo e atual</small></span><b>✓</b></button>
+        <button type="button" class="template-choice" data-template="classic"><i class="template-swatch classic-swatch"></i><span><strong>Clássico</strong><small>Tradicional e direto</small></span><b>✓</b></button>
+        <button type="button" class="template-choice" data-template="minimal"><i class="template-swatch minimal-swatch"></i><span><strong>Minimal</strong><small>Leve e discreto</small></span><b>✓</b></button>
+        <button type="button" class="template-choice" data-template="executive"><i class="template-swatch executive-swatch"></i><span><strong>Executivo</strong><small>Corporativo</small></span><b>✓</b></button>
+        <button type="button" class="template-choice" data-template="creative"><i class="template-swatch creative-swatch"></i><span><strong>Criativo</strong><small>Expressivo</small></span><b>✓</b></button>
+      </div></section>
+      <section class="editor-section"><div class="section-heading"><strong>Cor de destaque</strong><small>Personalize os detalhes</small></div><div class="color-options">
+        <button type="button" class="color-choice" data-color="#742cff" style="--c:#742cff" aria-label="Roxo" title="Roxo"></button><button type="button" class="color-choice" data-color="#1769aa" style="--c:#1769aa" aria-label="Azul" title="Azul"></button><button type="button" class="color-choice" data-color="#16805c" style="--c:#16805c" aria-label="Verde" title="Verde"></button><button type="button" class="color-choice" data-color="#1f3a5f" style="--c:#1f3a5f" aria-label="Marinho" title="Marinho"></button><button type="button" class="color-choice" data-color="#d35f12" style="--c:#d35f12" aria-label="Laranja" title="Laranja"></button>
+      </div></section>
+      <div class="design-note"><strong>Leitura rápida</strong><p>Use bom contraste e mantenha as informações mais importantes no início.</p></div>
+    </aside>
+  </div>
+  <script src="../../js/app.js"></script>
+</body>
+</html>
