@@ -1,0 +1,8 @@
+.env
+.env.*
+!.env.example
+node_modules/
+backend/data/*.sqlite
+backend/data/*.sqlite-journal
+backend/data/*.sqlite-wal
+backend/data/*.sqlite-shm
