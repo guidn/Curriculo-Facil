@@ -12,22 +12,20 @@
 <body class="editor-page">
   <header class="editor-top">
     <div class="editor-top-left">
-      <a class="brand" href="../app/dashboard.html" data-home-link data-guest-home="../../index.html" data-member-home="../app/dashboard.html" aria-label="Voltar ao painel"><span class="brand-mark">CF</span><span>Currículo<span class="brand-accent">Fácil</span></span></a>
+      <a class="button button-ghost button-small editor-back" href="../app/meus-curriculos.html" aria-label="Voltar aos currículos">← <span>Meus currículos</span></a>
+      <a class="brand" href="../app/dashboard.html" data-home-link data-guest-home="../../index.html" data-member-home="../app/dashboard.html" aria-label="Ir para o painel"><span class="brand-mark">CF</span><span>Currículo<span class="brand-accent">Fácil</span></span></a>
       <span class="editor-divider"></span><span class="editor-name">Editor de currículo</span>
     </div>
     <div class="editor-top-right">
       <span class="editor-status" data-save-status role="status" aria-live="polite">Todas as alterações salvas</span>
       <button class="button button-ghost button-small" type="button" data-share>Compartilhar</button>
       <button class="button button-secondary button-small" type="button" data-export>Exportar PDF</button>
-      <button class="button button-primary button-small save-button" type="button" data-save>Salvar</button>
+      <button class="button button-secondary button-small" type="button" data-save>Salvar</button>
+      <button class="button button-primary button-small save-button" type="button" data-save-preview>Salvar e visualizar</button>
+      <button class="button button-secondary button-small" type="button" data-return-editor hidden>← Editar</button>
     </div>
   </header>
-  <nav class="editor-tabs" aria-label="Painel do editor">
-    <button type="button" class="editor-tab active" data-editor-view="content" aria-selected="true">✎ <span>Conteúdo</span></button>
-    <button type="button" class="editor-tab" data-editor-view="design" aria-selected="false">◈ <span>Aparência</span></button>
-    <span class="editor-tabs-hint">A prévia acompanha suas alterações</span>
-  </nav>
-  <div class="editor-workspace" data-active-view="content">
+  <div class="editor-workspace">
     <aside class="editor-panel content-panel" data-content-panel>
       <div class="editor-panel-heading"><span class="eyebrow">Seu currículo</span><h1>Conteúdo</h1><p>Preencha os campos e acompanhe o resultado ao lado.</p></div>
       <form data-editor-form>
