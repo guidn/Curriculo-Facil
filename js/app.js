@@ -25,7 +25,7 @@ async function initLanding() {
 }
 
 function initHomeLinks() {
-  const links = $('[data-home-link]');
+  const links = $$('[data-home-link]');
   if (!links.length) return;
   currentUser().then(user => links.forEach(link => {
     link.href = user ? (link.dataset.memberHome || link.href) : (link.dataset.guestHome || link.href);
@@ -53,7 +53,11 @@ function renderResumeList(resumes){const box=$('[data-resume-list]');if(!box)ret
 async function initNewResume() {
   const form = $('[data-resume-create]');
   if (!form) return;
-  if (!(await currentUser())) return go('../auth/login.html');
+  const user = await currentUser();
+  if (!user) return go('../auth/login.html');
+  const nameField = $('[name="name"]', form), emailField = $('[name="email"]', form);
+  if (nameField && !nameField.value) nameField.value = user.name || '';
+  if (emailField && !emailField.value) emailField.value = user.email || '';
   if (new URLSearchParams(location.search).get('onboarding') === '1') {
     const title = $('[data-builder-title]', form);
     if (title) title.textContent = 'Vamos preparar seu primeiro currículo.';
