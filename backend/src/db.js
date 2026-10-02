@@ -61,4 +61,8 @@ CREATE TABLE IF NOT EXISTS subscriptions (
   updated_at TEXT NOT NULL
 );
 `);
+const userColumns = db.prepare('PRAGMA table_info(users)').all().map(column => column.name);
+if (!userColumns.includes('resume_profile_json')) {
+  db.exec("ALTER TABLE users ADD COLUMN resume_profile_json TEXT NOT NULL DEFAULT '{}'");
+}
 module.exports = db;
