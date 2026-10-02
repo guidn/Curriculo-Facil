@@ -32,9 +32,9 @@ O arquivo `.env.example` mostra as configurações disponíveis. Copie para `.en
 
 ## Verificação
 
-`npm run check` verifica a sintaxe dos arquivos JavaScript. O repositório não contém uma suíte de testes automatizados; esse comando não cobre integração de rotas, banco de dados ou navegador.
+`npm run check` verifica a sintaxe dos arquivos JavaScript. `npm test` executa os testes de integração nativos do Node.js para páginas públicas, autenticação, sessões, recuperação de senha, autorização de currículos e limites de requisições. Os testes usam um banco SQLite temporário.
 
-O SQLite é criado automaticamente no primeiro início e fica em `backend/data/`. O arquivo local do banco é ignorado pelo Git para evitar versionar dados de usuários.
+O SQLite de desenvolvimento é criado automaticamente em `backend/data/`. O arquivo local do banco é ignorado pelo Git para evitar versionar dados de usuários. A variável opcional `DB_FILE` permite escolher outro caminho, por exemplo para testes.
 
 ## Funcionalidades implementadas
 
