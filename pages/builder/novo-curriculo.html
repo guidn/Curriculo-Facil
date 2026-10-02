@@ -22,7 +22,7 @@
     <div class="builder-head">
       <div>
         <span class="eyebrow">Novo currículo</span>
-        <h1>Vamos começar.</h1>
+        <h1 data-builder-title>Vamos começar.</h1>
         <p>Avance pelas etapas. Seus dados serão guardados quando criar o currículo.</p>
       </div>
     </div>
@@ -62,7 +62,9 @@
             <div class="form-grid">
               <label class="form-field"><span>Cargo</span><input name="experienceRole" placeholder="Ex.: Assistente administrativo"></label>
               <label class="form-field"><span>Empresa</span><input name="experienceCompany" placeholder="Nome da empresa"></label>
-              <label class="form-field full"><span>Período</span><input name="experiencePeriod" placeholder="Ex.: Jan/2022 – Mar/2024"></label>
+              <label class="form-field"><span>Data de início</span><input name="experienceStartDate" type="date"></label>
+              <label class="form-field"><span>Data de término</span><input name="experienceEndDate" type="date"></label>
+              <label class="form-field full current-field"><input name="experienceCurrent" type="checkbox"><span>Trabalho aqui atualmente</span></label>
               <label class="form-field full"><span>Atividades e resultados</span><textarea name="experienceDescription" rows="3" placeholder="Descreva suas principais atividades."></textarea></label>
             </div>
             <button class="button button-ghost button-small" type="button" data-remove-entry>Remover experiência</button>
@@ -81,34 +83,26 @@
             <div class="form-grid">
               <label class="form-field"><span>Curso ou formação</span><input name="educationCourse" placeholder="Ex.: Administração"></label>
               <label class="form-field"><span>Instituição</span><input name="educationSchool" placeholder="Nome da instituição"></label>
-              <label class="form-field full"><span>Período</span><input name="educationPeriod" placeholder="Ex.: 2020 – 2023"></label>
+              <label class="form-field"><span>Data de início</span><input name="educationStartDate" type="date"></label>
+              <label class="form-field"><span>Data de término</span><input name="educationEndDate" type="date"></label>
+              <label class="form-field full current-field"><input name="educationCurrent" type="checkbox"><span>Estou estudando aqui atualmente</span></label>
             </div>
             <button class="button button-ghost button-small" type="button" data-remove-entry>Remover formação</button>
           </fieldset>
         </template>
         <button class="button button-secondary" type="button" data-add-education>＋ Adicionar formação</button>
-        <label class="form-field full skills-field"><span>Habilidades</span><small>Separe por vírgulas, por exemplo: Comunicação, Excel, Atendimento.</small><input name="skills" placeholder="Suas habilidades"></label>
+        <div class="form-field full skills-field"><span>Habilidades</span><small>Toque nas opções para adicionar. Você também pode incluir outra.</small><div class="skill-options" data-skill-options><button type="button" data-skill-chip="Comunicação">Comunicação</button><button type="button" data-skill-chip="Excel">Excel</button><button type="button" data-skill-chip="Atendimento ao cliente">Atendimento ao cliente</button><button type="button" data-skill-chip="Organização">Organização</button><button type="button" data-skill-chip="Vendas">Vendas</button><button type="button" data-skill-chip="Liderança">Liderança</button><button type="button" data-skill-chip="Pacote Office">Pacote Office</button><button type="button" data-skill-chip="Trabalho em equipe">Trabalho em equipe</button></div><label class="form-field"><span>Outra habilidade</span><input name="customSkills" placeholder="Ex.: Inglês"></label></div>
       </section>
 
       <section class="wizard-step" data-wizard-step="3" aria-labelledby="step-template-title" hidden>
         <h2 id="step-template-title">Escolha um modelo</h2>
-        <p>São modelos simples para testar. Você pode trocar o modelo no editor.</p>
+        <p>As prévias abaixo usam as informações que você já preencheu. Você pode trocar o modelo no editor.</p>
         <div class="template-grid">
-          <label class="template-card">
-            <input type="radio" name="template" value="modern" checked>
-            <span class="template-preview template-preview-modern" aria-hidden="true"><i></i><i></i><i></i></span>
-            <strong>Moderno</strong><small>Roxo, limpo e atual</small>
-          </label>
-          <label class="template-card">
-            <input type="radio" name="template" value="classic">
-            <span class="template-preview template-preview-classic" aria-hidden="true"><i></i><i></i><i></i></span>
-            <strong>Clássico</strong><small>Azul e tradicional</small>
-          </label>
-          <label class="template-card">
-            <input type="radio" name="template" value="minimal">
-            <span class="template-preview template-preview-minimal" aria-hidden="true"><i></i><i></i><i></i></span>
-            <strong>Minimal</strong><small>Verde e discreto</small>
-          </label>
+          <label class="template-card"><input type="radio" name="template" value="modern" checked><span class="template-preview template-preview-modern"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Moderno</strong><small>Roxo, limpo e atual</small></label>
+          <label class="template-card"><input type="radio" name="template" value="classic"><span class="template-preview template-preview-classic"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Clássico</strong><small>Azul e tradicional</small></label>
+          <label class="template-card"><input type="radio" name="template" value="minimal"><span class="template-preview template-preview-minimal"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Minimal</strong><small>Verde e discreto</small></label>
+          <label class="template-card"><input type="radio" name="template" value="executive"><span class="template-preview template-preview-executive"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Executivo</strong><small>Marinho e corporativo</small></label>
+          <label class="template-card"><input type="radio" name="template" value="creative"><span class="template-preview template-preview-creative"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Criativo</strong><small>Laranja e expressivo</small></label>
         </div>
       </section>
 
