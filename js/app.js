@@ -19,6 +19,11 @@ async function currentUser() {
 function toast(message, type='info') { let el=$('.cf-toast'); if(!el){el=document.createElement('div');el.className='cf-toast';document.body.appendChild(el)} el.textContent=message;el.dataset.type=type; setTimeout(()=>el.remove(),3200); }
 function go(path){ window.location.href=path; }
 
+async function initLanding() {
+  if (!$('[data-public-home]')) return;
+  if (await currentUser()) go('pages/app/dashboard.html');
+}
+
 function initHomeLinks() {
   const links = $('[data-home-link]');
   if (!links.length) return;
@@ -184,4 +189,4 @@ async function initLogout(){const btn=$('[data-logout]');if(btn)btn.addEventList
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 
 window.CurriculoFacil={api,toast,go};
-document.addEventListener('DOMContentLoaded',()=>{initHomeLinks();initAuth();initDashboard();initNewResume();initEditor();initModels();initProfile();initPricing();initLogout(); const menu=$('[data-menu]'); if(menu)menu.addEventListener('click',()=>document.body.classList.toggle('menu-open'));});
+document.addEventListener('DOMContentLoaded',()=>{initLanding();initHomeLinks();initAuth();initDashboard();initNewResume();initEditor();initModels();initProfile();initPricing();initLogout(); const menu=$('[data-menu]'); if(menu)menu.addEventListener('click',()=>document.body.classList.toggle('menu-open'));});
