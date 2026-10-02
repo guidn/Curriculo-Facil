@@ -33,7 +33,7 @@ A regra de dependência é voltada para dentro: domínio não importa HTTP, SQLi
 - `infrastructure/sqlite/`: esquema, migrações e implementação das portas de persistência.
 - `infrastructure/security/`: hashing de senha, token, hash de token e datas/IDs aleatórios.
 - `infrastructure/email/`: integração HTTP com Resend. A chave e o endereço remetente vêm da configuração do servidor.
-- `interfaces/http/`: rotas, rate limits, validação de origem, serialização JSON, cookies HTTP-only e conteúdo estático.
+- `interfaces/http/`: roteamento, rate limits, validação de origem, serialização JSON, cookies HTTP-only, conteúdo estático e presenter HTML do currículo exportado.
 - `server.js`: composition root; cria banco e adapters, injeta-os nos casos de uso e inicia o servidor.
 - `js/features/`: controladores de apresentação separados por fluxo. `shared.mjs` centraliza cliente API, estado de sessão, navegação e mensagens; `app.mjs` só inicializa os controladores.
 
