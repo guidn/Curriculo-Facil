@@ -38,7 +38,7 @@ async function initAuth() {
   if (!login && !register) return;
   if (await currentUser()) return go('../app/dashboard.html');
   if (login) login.addEventListener('submit', async e => { e.preventDefault(); const email=$('[name=email]',login).value.trim(), password=$('[name=password]',login).value; const btn=$('button',login); btn.disabled=true; try{await api('/auth/login',{method:'POST',body:JSON.stringify({email,password})}); go('../app/dashboard.html')}catch(err){toast(err.message,'error')}finally{btn.disabled=false;} });
-  if (register) register.addEventListener('submit', async e => { e.preventDefault(); const f=new FormData(register); const name=f.get('name')?.trim(),email=f.get('email')?.trim(),password=f.get('password'),confirm=f.get('confirmPassword'); if(password!==confirm)return toast('As senhas não coincidem.','error'); if(!f.get('terms'))return toast('Aceite os termos para continuar.','error'); const btn=$('button',register);btn.disabled=true;try{await api('/auth/register',{method:'POST',body:JSON.stringify({name,email,password})});go('../app/dashboard.html')}catch(err){toast(err.message,'error')}finally{btn.disabled=false;} });
+  if (register) register.addEventListener('submit', async e => { e.preventDefault(); const f=new FormData(register); const name=f.get('name')?.trim(),email=f.get('email')?.trim(),password=f.get('password'),confirm=f.get('confirmPassword'); if(password!==confirm)return toast('As senhas não coincidem.','error'); if(!f.get('terms'))return toast('Aceite os termos para continuar.','error'); const btn=$('button',register);btn.disabled=true;try{await api('/auth/register',{method:'POST',body:JSON.stringify({name,email,password})});go('../builder/novo-curriculo.html?onboarding=1')}catch(err){toast(err.message,'error')}finally{btn.disabled=false;} });
 }
 
 async function initDashboard(){
@@ -54,6 +54,10 @@ async function initNewResume() {
   const form = $('[data-resume-create]');
   if (!form) return;
   if (!(await currentUser())) return go('../auth/login.html');
+  if (new URLSearchParams(location.search).get('onboarding') === '1') {
+    const title = $('[data-builder-title]', form);
+    if (title) title.textContent = 'Vamos preparar seu primeiro currículo.';
+  }
 
   const panels = $$('[data-wizard-step]', form);
   const indicators = $$('[data-wizard-nav]', form);
@@ -100,6 +104,22 @@ async function initNewResume() {
 
   $('[data-add-experience]', form).addEventListener('click', () => addEntry('[data-experience-template]', '[data-experience-list]'));
   $('[data-add-education]', form).addEventListener('click', () => addEntry('[data-education-template]', '[data-education-list]'));
+  form.addEventListener('change', event => {
+    const field = event.target;
+    if (field.matches('[name$="Current"]')) {
+      const end = field.closest('fieldset')?.querySelector('input[type="date"][name$="EndDate"]');
+      if (end) { end.disabled = field.checked; if (field.checked) end.value = ''; }
+    }
+    if (field.matches('input[type="date"][name$="StartDate"]')) {
+      const end = field.closest('fieldset')?.querySelector('input[type="date"][name$="EndDate"]');
+      if (end) end.min = field.value;
+    }
+  });
+  form.addEventListener('click', event => {
+    const chip = event.target.closest('[data-skill-chip]');
+    if (chip) { chip.classList.toggle('selected'); chip.setAttribute('aria-pressed', String(chip.classList.contains('selected'))); }
+  });
+  form.addEventListener('input', updateTemplatePreviews);
   form.addEventListener('click', event => {
     const remove = event.target.closest('[data-remove-entry]');
     if (remove) remove.closest('fieldset')?.remove();
@@ -113,10 +133,11 @@ async function initNewResume() {
   }));
 
   const requestedTemplate = new URLSearchParams(location.search).get('template');
-  if (['modern', 'classic', 'minimal'].includes(requestedTemplate)) {
+  if (['modern', 'classic', 'minimal', 'executive', 'creative'].includes(requestedTemplate)) {
     const radio = form.querySelector(`input[name="template"][value="${requestedTemplate}"]`);
     if (radio) radio.checked = true;
   }
+  updateTemplatePreviews();
   showStep(0);
 
   form.addEventListener('submit', async event => {
@@ -124,19 +145,23 @@ async function initNewResume() {
     if (!validateStep(activeStep)) return;
     const fields = new FormData(form);
     const template = fields.get('template') || 'modern';
-    const accent = { modern: '#742cff', classic: '#1769aa', minimal: '#16805c' }[template] || '#742cff';
+    const accent = { modern: '#742cff', classic: '#1769aa', minimal: '#16805c', executive: '#1f3a5f', creative: '#d35f12' }[template] || '#742cff';
     const experiences = $$('[data-experience-entry]', form).map(row => ({
       role: $('[name="experienceRole"]', row).value.trim(),
       company: $('[name="experienceCompany"]', row).value.trim(),
-      period: $('[name="experiencePeriod"]', row).value.trim(),
+      startDate: $('[name="experienceStartDate"]', row).value,
+      endDate: $('[name="experienceEndDate"]', row).value,
+      current: $('[name="experienceCurrent"]', row).checked,
       description: $('[name="experienceDescription"]', row).value.trim()
-    })).filter(item => item.role || item.company || item.period || item.description);
+    })).filter(item => item.role || item.company || item.startDate || item.description);
     const education = $$('[data-education-entry]', form).map(row => ({
       course: $('[name="educationCourse"]', row).value.trim(),
       school: $('[name="educationSchool"]', row).value.trim(),
-      period: $('[name="educationPeriod"]', row).value.trim()
-    })).filter(item => item.course || item.school || item.period);
-    const skills = String(fields.get('skills') || '').split(',').map(skill => skill.trim()).filter(Boolean);
+      startDate: $('[name="educationStartDate"]', row).value,
+      endDate: $('[name="educationEndDate"]', row).value,
+      current: $('[name="educationCurrent"]', row).checked
+    })).filter(item => item.course || item.school || item.startDate);
+    const skills = [...$$('[data-skill-chip].selected', form).map(button => button.dataset.skillChip), ...String(fields.get('customSkills') || '').split(',').map(skill => skill.trim()).filter(Boolean)];
     const data = {
       name: String(fields.get('name') || '').trim(),
       role: String(fields.get('role') || '').trim(),
@@ -169,16 +194,41 @@ async function initNewResume() {
   });
 }
 
+function updateTemplatePreviews() {
+  const form = $('[data-resume-create]'); if (!form) return;
+  const values = new FormData(form);
+  const experiences = $$('[data-experience-entry]', form).map(row => $('[name="experienceRole"]', row).value.trim()).filter(Boolean);
+  const education = $$('[data-education-entry]', form).map(row => $('[name="educationCourse"]', row).value.trim()).filter(Boolean);
+  const skills = [...$$('[data-skill-chip].selected', form).map(button => button.dataset.skillChip), ...String(values.get('customSkills') || '').split(',').map(x => x.trim()).filter(Boolean)];
+  const previews = $$('.template-preview', form);
+  previews.forEach(preview => {
+    const set = (selector, value, fallback) => { const node = $(selector, preview); if (node) node.textContent = value || fallback; };
+    set('[data-preview-name]', values.get('name')?.trim(), 'Seu nome');
+    set('[data-preview-role]', values.get('role')?.trim(), 'Cargo desejado');
+    set('[data-preview-contact]', [values.get('email'), values.get('phone'), values.get('city')].filter(Boolean).join(' · '), 'Seu contato');
+    set('[data-preview-summary]', values.get('summary')?.trim(), 'Resumo profissional');
+    set('[data-preview-experience]', experiences[0], 'Experiência profissional');
+    set('[data-preview-education]', education[0], 'Formação acadêmica');
+    set('[data-preview-skills]', skills.slice(0, 3).join(' · '), 'Habilidades');
+  });
+}
+
 async function initEditor(){
   const form=$('[data-editor-form]'); if(!form)return;
   if(!(await currentUser()))return go('../auth/login.html'); const id=new URLSearchParams(location.search).get('id'); if(!id)return go('novo-curriculo.html'); let r; try{r=(await api('/resumes/'+encodeURIComponent(id))).resume}catch(e){toast(e.message,'error');return}
   fillEditor(form,r);
+  $$('[data-editor-add]').forEach(button=>button.addEventListener('click',()=>addEditorEntry(form,button.dataset.editorAdd)));
+  form.addEventListener('click',event=>{if(event.target.closest('[data-editor-remove]')){event.target.closest('[data-editor-entry]')?.remove();renderPaper(form)}});
+  form.addEventListener('change',event=>{const current=event.target;if(current.matches('[data-current]')){const end=current.closest('[data-editor-entry]')?.querySelector('[data-end-date]');if(end){end.disabled=current.checked;if(current.checked)end.value=''}}});
   form.addEventListener('input',()=>renderPaper(form)); $('[data-save]',form)?.addEventListener('click',()=>saveEditor(form,r)); $('[data-export]')?.addEventListener('click',()=>exportResume(r.id)); $('[data-share]')?.addEventListener('click',()=>shareResume(r.id)); $$('.color-choice').forEach(x=>x.addEventListener('click',()=>{form.elements.accent.value=x.dataset.color;renderPaper(form)})); $$('.template-choice').forEach(x=>x.addEventListener('click',()=>{form.elements.template.value=x.dataset.template;renderPaper(form)})); renderPaper(form);
 }
-function fillEditor(form,r){const d=r.data||{}; for(const key of ['title','accent','template'])if(form.elements[key])form.elements[key].value=r[key]||'';for(const key of ['name','role','email','phone','city','summary'])if(form.elements[key])form.elements[key].value=d[key]||''; if(form.elements.skills)form.elements.skills.value=(d.skills||[]).join(', '); if(form.elements.experience)form.elements.experience.value=(d.experiences||[]).map(x=>[x.role,x.company,x.period,x.description].filter(Boolean).join(' | ')).join('\n'); if(form.elements.education)form.elements.education.value=(d.education||[]).map(x=>[x.course,x.school,x.period].filter(Boolean).join(' | ')).join('\n'); }
-function collectEditor(form){const d={};for(const key of ['name','role','email','phone','city','summary'])d[key]=form.elements[key]?.value.trim()||'';d.skills=(form.elements.skills?.value||'').split(',').map(x=>x.trim()).filter(Boolean);d.experiences=(form.elements.experience?.value||'').split('\n').map(line=>{const [role,company,period,description]=line.split('|').map(x=>x.trim());return role?{role,company,period,description}:null}).filter(Boolean);d.education=(form.elements.education?.value||'').split('\n').map(line=>{const [course,school,period]=line.split('|').map(x=>x.trim());return course?{course,school,period}:null}).filter(Boolean);return d;}
+function addEditorEntry(form,type,item={}){const target=type==='experience'?'experiences':'education', fields=type==='experience'?[['role','Cargo'],['company','Empresa']]:[['course','Curso ou formação'],['school','Instituição']];const box=document.createElement('fieldset');box.className='editor-entry';box.dataset.editorEntry=type;box.innerHTML=`<legend>${type==='experience'?'Experiência':'Formação'}</legend>${fields.map(([key,label])=>`<label class="form-field"><span>${label}</span><input data-entry-field="${key}"></label>`).join('')}<label class="form-field"><span>Data de início</span><input type="date" data-entry-field="startDate"></label><label class="form-field"><span>Data de término</span><input type="date" data-entry-field="endDate"></label><label class="form-field current-field"><input type="checkbox" data-current><span>${type==='experience'?'Trabalho aqui atualmente':'Estou estudando atualmente'}</span></label>${type==='experience'?'<label class="form-field"><span>Atividades e resultados</span><textarea data-entry-field="description" rows="3"></textarea></label>':''}${item.period&&!item.startDate&&!item.endDate?`<label class="form-field"><span>Período já cadastrado (formato antigo)</span><input data-entry-field="period"></label>`:''}<button type="button" class="button button-ghost button-small" data-editor-remove>Remover</button>`;$(target==='experiences'?'[data-editor-experiences]':'[data-editor-education]',form).append(box);for(const [key,value] of Object.entries(item)){const field=$(`[data-entry-field="${key}"]`,box);if(field)field.value=value||''}const start=$('[data-entry-field="startDate"]',box),end=$('[data-entry-field="endDate"]',box),current=$('[data-current]',box);current.checked=!!item.current;end.disabled=current.checked;if(start.value)end.min=start.value;}
+function parseLegacyDate(value){if(!value)return '';if(/^\d{4}-\d{2}-\d{2}$/.test(value))return value;if(/^\d{4}-\d{2}$/.test(value))return `${value}-01`;const m=String(value).match(/(\d{1,2})\s*\/\s*(\d{4})/);if(m)return `${m[2]}-${m[1].padStart(2,'0')}-01`;return '';}
+function fillEditor(form,r){const d=r.data||{}; for(const key of ['title','accent','template'])if(form.elements[key])form.elements[key].value=r[key]||'';for(const key of ['name','role','email','phone','city','summary'])if(form.elements[key])form.elements[key].value=d[key]||''; if(form.elements.skills)form.elements.skills.value=(d.skills||[]).join(', '); (d.experiences||[]).forEach(item=>addEditorEntry(form,'experience',{...item,startDate:item.startDate||parseLegacyDate(item.period),endDate:item.endDate||''}));(d.education||[]).forEach(item=>addEditorEntry(form,'education',{...item,startDate:item.startDate||parseLegacyDate(item.period),endDate:item.endDate||''}));}
+function collectEditor(form){const d={};for(const key of ['name','role','email','phone','city','summary'])d[key]=form.elements[key]?.value.trim()||'';d.skills=(form.elements.skills?.value||'').split(',').map(x=>x.trim()).filter(Boolean);const entries=type=>$$(`[data-editor-entry="${type}"]`,form).map(row=>{const item={};$$('[data-entry-field]',row).forEach(field=>item[field.dataset.entryField]=field.value.trim());item.startDate=item.startDate||'';item.endDate=item.endDate||'';item.current=$('[data-current]',row).checked;return item}).filter(item=>Object.entries(item).some(([key,value])=>!['current','startDate','endDate'].includes(key)&&value)||item.startDate);d.experiences=entries('experience');d.education=entries('education');return d;}
+function formatPeriod(item){if(item.period)return item.period;const fmt=value=>{if(!value)return '';const date=new Date(`${value.slice(0,10)}T00:00:00`);return Number.isNaN(date.valueOf())?'':date.toLocaleDateString('pt-BR',{month:'short',year:'numeric'})};const start=fmt(item.startDate),end=item.current?'Atual':fmt(item.endDate);return [start,end].filter(Boolean).join(' – ')}
 async function saveEditor(form,r){try{const out=await api('/resumes/'+r.id,{method:'PATCH',body:JSON.stringify({title:form.elements.title.value,template:form.elements.template.value,accent:form.elements.accent.value,data:collectEditor(form)})});r=out.resume; toast('Currículo salvo.','success')}catch(e){toast(e.message,'error')}}
-function renderPaper(form){const d=collectEditor(form), paper=$('[data-paper]');if(!paper)return;paper.dataset.template=form.elements.template.value;paper.style.setProperty('--accent',form.elements.accent.value);paper.innerHTML=`<div class="paper-head"><h1>${escapeHtml(d.name||'Seu nome')}</h1><p>${escapeHtml(d.role||'Cargo desejado')}</p><small>${escapeHtml([d.email,d.phone,d.city].filter(Boolean).join(' · '))}</small></div>${d.summary?`<section><h2>Resumo</h2><p>${escapeHtml(d.summary)}</p></section>`:''}${d.experiences.length?`<section><h2>Experiência</h2>${d.experiences.map(x=>`<div><strong>${escapeHtml(x.role)}</strong><p>${escapeHtml([x.company,x.period].filter(Boolean).join(' · '))}</p><p>${escapeHtml(x.description||'')}</p></div>`).join('')}`:''}${d.education.length?`<section><h2>Formação</h2>${d.education.map(x=>`<div><strong>${escapeHtml(x.course)}</strong><p>${escapeHtml([x.school,x.period].filter(Boolean).join(' · '))}</p></div>`).join('')}`:''}${d.skills.length?`<section><h2>Habilidades</h2><p>${d.skills.map(x=>`<span class="skill-chip">${escapeHtml(x)}</span>`).join(' ')}</p></section>`:''}`;}
+function renderPaper(form){const d=collectEditor(form), paper=$('[data-paper]');if(!paper)return;paper.dataset.template=form.elements.template.value;paper.style.setProperty('--accent',form.elements.accent.value);paper.innerHTML=`<div class="paper-head"><h1>${escapeHtml(d.name||'Seu nome')}</h1><p>${escapeHtml(d.role||'Cargo desejado')}</p><small>${escapeHtml([d.email,d.phone,d.city].filter(Boolean).join(' · '))}</small></div>${d.summary?`<section><h2>Resumo</h2><p>${escapeHtml(d.summary)}</p></section>`:''}${d.experiences.length?`<section><h2>Experiência</h2>${d.experiences.map(x=>`<div><strong>${escapeHtml(x.role)}</strong><p>${escapeHtml([x.company,formatPeriod(x)].filter(Boolean).join(' · '))}</p><p>${escapeHtml(x.description||'')}</p></div>`).join('')}`:''}${d.education.length?`<section><h2>Formação</h2>${d.education.map(x=>`<div><strong>${escapeHtml(x.course)}</strong><p>${escapeHtml([x.school,formatPeriod(x)].filter(Boolean).join(' · '))}</p></div>`).join('')}`:''}${d.skills.length?`<section><h2>Habilidades</h2><p>${d.skills.map(x=>`<span class="skill-chip">${escapeHtml(x)}</span>`).join(' ')}</p></section>`:''}`;}
 async function exportResume(id){try{const html=await fetch('/api/resumes/'+id+'/export',{method:'POST',credentials:'include'}).then(async r=>{if(!r.ok)throw new Error((await r.json()).error);return r.text()});const w=window.open('','_blank');w.document.write(html);w.document.close()}catch(e){toast(e.message,'error')}}
 async function shareResume(id){try{const r=await api('/resumes/'+id+'/share',{method:'POST'});await navigator.clipboard?.writeText(r.url);toast(`Link copiado: ${r.url}`,'success')}catch(e){toast(e.message,'error')}}
 
