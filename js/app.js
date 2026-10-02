@@ -88,7 +88,6 @@ async function initNewResume() {
     const list = $(listSelector, form);
     const fragment = template.content.cloneNode(true);
     const entry = fragment.querySelector('fieldset');
-    $('[data-remove-entry]', entry).addEventListener('click', () => entry.remove());
     list.append(fragment);
     const firstInput = $('input', entry);
     firstInput?.focus();
