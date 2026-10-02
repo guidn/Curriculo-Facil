@@ -94,11 +94,18 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.match(wizardHtml, /name="template"/);
   const editorPage = await call('/pages/builder/editor.html');
   const editorHtml = await editorPage.text();
-  assert.match(editorHtml, /data-editor-view="content"/);
-  assert.match(editorHtml, /data-editor-view="design"/);
+  assert.match(editorHtml, /data-save-preview/);
+  assert.match(editorHtml, /data-return-editor/);
+  assert.match(editorHtml, /editor-back/);
+  assert.doesNotMatch(editorHtml, /data-editor-view/);
   assert.match(editorHtml, /data-save-status/);
   assert.match(editorHtml, /data-zoom="fit"/);
   assert.match(editorHtml, /data-template="creative"/);
+  const profilePage = await call('/pages/app/perfil.html');
+  const profileHtml = await profilePage.text();
+  assert.match(profileHtml, /Informações para o currículo/);
+  assert.match(profileHtml, /data-editor-experiences/);
+  assert.match(profileHtml, /data-editor-education/);
   const dashboardResponse = await call('/pages/app/dashboard.html');
   const dashboardHtml = await dashboardResponse.text();
   assert.match(dashboardHtml, /data-home-link/);
@@ -127,6 +134,12 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
 
   const me = await call('/api/auth/me', { cookie });
   assert.equal((await me.json()).user.email, email);
+  const profileSaved = await call('/api/profile', {
+    method: 'PATCH', cookie,
+    payload: { name: 'Test User', resumeProfile: { role: 'Analyst', phone: '11999990000', city: 'São Paulo', skills: ['Excel'], experiences: [{ role: 'Analyst', company: 'Example Co', startDate: '2022-01-01' }] } }
+  });
+  assert.equal(profileSaved.status, 200);
+  assert.equal((await profileSaved.json()).user.resumeProfile.experiences[0].company, 'Example Co');
 
   const created = await call('/api/resumes', {
     method: 'POST',
@@ -157,6 +170,9 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.match(exportedHtml, /paper template-classic/);
   assert.match(exportedHtml, /template-classic \.head/);
   assert.match(exportedHtml, /2022/);
+  const resumeUpdated = await call(`/api/resumes/${resume.id}`, { method: 'PATCH', cookie, payload: { title: 'Currículo atualizado', template: 'executive', accent: '#1f3a5f', data: { ...resume.data, role: 'Analyst' } } });
+  assert.equal(resumeUpdated.status, 200);
+  assert.equal((await resumeUpdated.json()).resume.template, 'executive');
 
   const otherEmail = `other-${crypto.randomUUID()}@example.test`;
   const otherRegistration = await call('/api/auth/register', {
@@ -174,7 +190,17 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   });
   assert.equal(invalid.status, 400);
   const usage = await call('/api/usage', { cookie });
-  assert.equal((await usage.json()).usage.resumeCreates, 1, 'invalid input must not consume quota');
+  assert.equal((await usage.json()).resumeCapacity.available, 1, 'invalid input must not consume saved-resume capacity');
+
+  const secondResume = await call('/api/resumes', { method: 'POST', cookie, payload: { title: 'Segundo currículo', template: 'modern', accent: '#742cff', data: {} } });
+  assert.equal(secondResume.status, 201);
+  const blockedResume = await call('/api/resumes', { method: 'POST', cookie, payload: { title: 'Terceiro currículo', template: 'modern', accent: '#742cff', data: {} } });
+  assert.equal(blockedResume.status, 409);
+  assert.equal((await blockedResume.json()).code, 'RESUME_LIMIT_REACHED');
+  const second = (await secondResume.json()).resume;
+  assert.equal((await call(`/api/resumes/${second.id}`, { method: 'DELETE', cookie })).status, 204);
+  assert.equal((await call(`/api/resumes/${second.id}`, { cookie })).status, 404);
+  assert.equal((await (await call('/api/usage', { cookie })).json()).resumeCapacity.available, 1, 'deleting a resume releases a saved slot');
 
   const csrf = await call('/api/resumes', {
     method: 'POST',
