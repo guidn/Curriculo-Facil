@@ -42,13 +42,15 @@ O SQLite de desenvolvimento é criado automaticamente em `backend/data/`. O arqu
 - Senhas protegidas com `scrypt`.
 - Recuperação de senha em modo de desenvolvimento.
 - SQLite com usuários, sessões, currículos, uso diário e assinaturas.
+- Perfil com dados profissionais reutilizáveis ao iniciar novos currículos.
 - CRUD de currículos.
 - Criação guiada em quatro etapas: informações, experiência, formação e modelo.
-- Três modelos simples para teste (Moderno, Clássico e Minimal), com estilos visíveis no editor e na exportação.
-- Editor de currículo com preview ao vivo.
+- Cinco modelos (Moderno, Clássico, Minimal, Executivo e Criativo), com estilos visíveis no editor e na exportação.
+- Editor de currículo com preview ao vivo, salvamento automático e modo de visualização.
 - Exportação em formato imprimível com botão `Salvar em PDF`.
 - Compartilhamento por link público.
-- Limites por plano: Gratuito 2, Básico 5, Premium ilimitado.
+- Currículos salvos por plano: Gratuito 2, Básico 5, Premium ilimitado; apagar um libera espaço.
+- Arquitetura em camadas e padrões adotados: veja [`architecture.md`](architecture.md).
 - Espaço reservado para publicidade no fluxo de exportação gratuito.
 - Endpoint de checkout preparado para integração com gateway.
 - Endpoint de ativação de plano somente para desenvolvimento/testes.
