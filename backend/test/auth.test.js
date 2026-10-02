@@ -140,6 +140,11 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   });
   assert.equal(profileSaved.status, 200);
   assert.equal((await profileSaved.json()).user.resumeProfile.experiences[0].company, 'Example Co');
+  const invalidProfileDate = await call('/api/profile', {
+    method: 'PATCH', cookie,
+    payload: { name: 'Test User', resumeProfile: { experiences: [{ role: 'Analyst', startDate: '2024-04-01', endDate: '2023-03-01' }] } }
+  });
+  assert.equal(invalidProfileDate.status, 400, 'profile service rejects reversed date ranges');
 
   const created = await call('/api/resumes', {
     method: 'POST',
