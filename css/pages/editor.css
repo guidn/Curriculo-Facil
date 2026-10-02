@@ -6,3 +6,4 @@
 .paper[data-template="minimal"]{box-shadow:none}
 .paper[data-template="minimal"] .paper-head{border-bottom:1px solid #ddd}
 .paper[data-template="minimal"] h2{text-transform:none;letter-spacing:0}
+.paper[data-template="executive"] .paper-head{background:var(--accent);color:#fff;padding:20px;border:0}.paper[data-template="executive"] .paper-head p{color:#eef}.paper[data-template="executive"] h2{border-bottom:1px solid #ccd4df;padding-bottom:6px}.paper[data-template="creative"]{border-top:10px solid var(--accent)}.paper[data-template="creative"] .paper-head{border:0}.paper[data-template="creative"] h2{display:inline-block;background:#fff2e8;padding:5px 9px;border-radius:4px}.editor-entry{border:1px solid var(--border);border-radius:10px;padding:12px;margin:12px 0}.editor-entry legend{padding:0 5px}.editor-entry .form-field{margin-bottom:9px}.editor-entry .current-field{display:flex;align-items:center;gap:8px}.editor-entry .current-field input{width:auto}
