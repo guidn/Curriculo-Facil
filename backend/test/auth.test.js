@@ -227,11 +227,11 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
     method: 'POST',
     payload: { email }
   });
-  const developmentToken = (await forgot.json()).developmentToken;
-  assert.ok(developmentToken);
+  const developmentCode = (await forgot.json()).developmentCode;
+  assert.match(developmentCode, /^\d{6}$/);
   const reset = await call('/api/auth/reset-password', {
     method: 'POST',
-    payload: { token: developmentToken, password: 'ReplacementPassword123' }
+    payload: { code: developmentCode, password: 'ReplacementPassword123' }
   });
   assert.equal(reset.status, 200);
   assert.equal((await call('/api/auth/me', { cookie })).status, 401, 'password reset revokes old sessions');
@@ -247,7 +247,7 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
 
   const usedToken = await call('/api/auth/reset-password', {
     method: 'POST',
-    payload: { token: developmentToken, password: 'AnotherPassword123' }
+    payload: { code: developmentCode, password: 'AnotherPassword123' }
   });
   assert.equal(usedToken.status, 400, 'a recovery token can only be used once');
   const logout = await call('/api/auth/logout', { method: 'POST', cookie: loginCookie });
@@ -265,3 +265,4 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   }
   assert.equal(rateResponses.at(-1).status, 429, 'login attempts should be rate limited');
 });
+
