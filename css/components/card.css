@@ -1,0 +1,1 @@
+.card{background:rgba(16,13,24,.88);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}.card-hover{transition:.2s}.card-hover:hover{border-color:rgba(167,117,255,.3);transform:translateY(-2px)}.stat-card{padding:20px}.stat-card strong{display:block;font-size:27px}.stat-card span{font-size:12px;color:var(--muted)}

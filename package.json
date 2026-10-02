@@ -1,0 +1,13 @@
+{
+  "name": "curriculo-facil",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Currículo Fácil — gerador de currículos full-stack em HTML, CSS e JavaScript com backend Node.js + SQLite.",
+  "main": "backend/src/server.js",
+  "scripts": {
+    "dev": "node --watch backend/src/server.js",
+    "start": "node backend/src/server.js",
+    "check": "node backend/src/check.js"
+  },
+  "engines": { "node": ">=22.5" }
+}
