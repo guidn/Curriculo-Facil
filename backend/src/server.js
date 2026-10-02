@@ -6,9 +6,11 @@ const config = require('./config');
 const db = require('./db');
 const PLANS = require('./plans');
 const { hashPassword, verifyPassword, token, hashToken, id, today } = require('./security');
+const crypto = require('node:crypto');
 const { setSession, clearSession, getUser, requireUser, parseCookies } = require('./auth');
 const { resumeCapacity } = require('./services/resume-service');
 const { normalizeResumeProfile } = require('./services/profile-service');
+const emailService = require('./services/email-service');
 
 const MIME = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.txt':'text/plain; charset=utf-8','.svg':'image/svg+xml' };
 const rate = new Map();
@@ -85,12 +87,13 @@ async function route(req,res) {
       if (method==='POST' && p==='/api/auth/logout') { const raw=parseCookies(req).cf_session; clearSession(res,raw); return json(res,200,{ok:true}); }
       if (method==='GET' && p==='/api/auth/me') { const user=getUser(req); return user?json(res,200,{user:cleanUser(user)}):json(res,401,{error:'Não autenticado.'}); }
       if (method==='POST' && p==='/api/auth/forgot-password') {
-        const b=await body(req), email=String(b.email||'').trim().toLowerCase(), user=db.prepare('SELECT * FROM users WHERE email=?').get(email); let devToken=null;
-        if(user){ const raw=token(32), expires=new Date(Date.now()+config.resetTokenMinutes*60000).toISOString(); db.prepare('DELETE FROM password_resets WHERE user_id=?').run(user.id); db.prepare('INSERT INTO password_resets(id,user_id,token_hash,expires_at) VALUES(?,?,?,?)').run(id(),user.id,hashToken(raw),expires); if(config.nodeEnv!=='production') devToken=raw; }
-        return json(res,200,{message:'Se o e-mail existir, um link de recuperação será disponibilizado.', ...(devToken?{developmentToken:devToken}: {})});
+        if(config.nodeEnv==='production'&&!emailService.configured()) return json(res,503,{error:'A recuperação por e-mail ainda não está configurada. Tente novamente mais tarde.'});
+        const b=await body(req), email=String(b.email||'').trim().toLowerCase(), user=db.prepare('SELECT * FROM users WHERE email=?').get(email); let devCode=null;
+        if(user){ const raw=String(crypto.randomInt(0,1000000)).padStart(6,'0'), expires=new Date(Date.now()+config.resetTokenMinutes*60000).toISOString(); db.prepare('DELETE FROM password_resets WHERE user_id=?').run(user.id); db.prepare('INSERT INTO password_resets(id,user_id,token_hash,expires_at) VALUES(?,?,?,?)').run(id(),user.id,hashToken(raw),expires); if(emailService.configured()){try{await emailService.sendPasswordResetCode(email,raw)}catch(error){console.error('Falha ao enviar e-mail de recuperação:',error.message)}} else if(config.nodeEnv!=='production') devCode=raw; }
+        return json(res,200,{message:'Se o e-mail existir, enviaremos um código de recuperação.', ...(devCode?{developmentCode:devCode}: {})});
       }
       if (method==='POST' && p==='/api/auth/reset-password') {
-        const b=await body(req), raw=String(b.token||''), password=String(b.password||''); if(password.length<8) return json(res,400,{error:'A senha deve ter pelo menos 8 caracteres.'}); const row=db.prepare(`SELECT * FROM password_resets WHERE token_hash=? AND used_at IS NULL AND expires_at > datetime('now')`).get(hashToken(raw)); if(!row) return json(res,400,{error:'Token inválido ou expirado.'}); db.prepare('UPDATE users SET password_hash=?,updated_at=? WHERE id=?').run(hashPassword(password),now(),row.user_id); db.prepare('DELETE FROM sessions WHERE user_id=?').run(row.user_id); db.prepare('UPDATE password_resets SET used_at=? WHERE id=?').run(now(),row.id); return json(res,200,{ok:true});
+        const b=await body(req), raw=String(b.code??b.token??'').trim(), password=String(b.password||''); if(password.length<8) return json(res,400,{error:'A senha deve ter pelo menos 8 caracteres.'}); if(!/^\d{6}$/.test(raw)) return json(res,400,{error:'Informe o código de 6 dígitos.'}); const row=db.prepare(`SELECT * FROM password_resets WHERE token_hash=? AND used_at IS NULL AND expires_at > datetime('now')`).get(hashToken(raw)); if(!row) return json(res,400,{error:'Código inválido ou expirado.'}); db.prepare('UPDATE users SET password_hash=?,updated_at=? WHERE id=?').run(hashPassword(password),now(),row.user_id); db.prepare('DELETE FROM sessions WHERE user_id=?').run(row.user_id); db.prepare('UPDATE password_resets SET used_at=? WHERE id=?').run(now(),row.id); return json(res,200,{ok:true});
       }
 
       if(method==='GET' && p==='/api/models') return json(res,200,{models:[{key:'modern',name:'Moderno',description:'Visual limpo com destaque roxo.'},{key:'classic',name:'Clássico',description:'Estrutura tradicional e objetiva.'},{key:'minimal',name:'Minimal',description:'Tipografia leve e bastante espaço.'},{key:'executive',name:'Executivo',description:'Visual corporativo com faixa marinho.'},{key:'creative',name:'Criativo',description:'Composição expressiva em laranja.'}]});
@@ -119,3 +122,4 @@ async function route(req,res) {
 
 const server=http.createServer((req,res)=>route(req,res));
 server.listen(config.port,()=>console.log(`Currículo Fácil rodando em ${config.appUrl}`));
+
