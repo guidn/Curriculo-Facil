@@ -37,6 +37,6 @@ Referências conceituais: [Presentation–Domain–Data Layering](https://martin
 
 ## Persistência e evolução
 
-`resume_profile_json` foi adicionado por uma migração aditiva: bancos existentes recebem a coluna apenas quando ela ainda não existe e preservam as contas atuais. O objeto de perfil tem campos permitidos, limites de tamanho e listas limitadas. Os currículos existentes continuam independentes e mantêm seus períodos legados.
+`resume_profile_json` foi adicionado por uma migração aditiva: bancos existentes recebem a coluna apenas quando ela ainda não existe e preservam as contas atuais. O objeto de perfil tem campos permitidos, limites de tamanho e listas limitadas. Datas são validadas no servidor, incluindo ordem de início e término. Os currículos existentes continuam independentes e mantêm seus períodos legados.
 
 Para adicionar uma regra de negócio, primeiro coloque-a no serviço apropriado e teste o serviço/rota. Para campos novos, atualize o normalizador, o formulário de perfil e o teste de round-trip. Só extraia novos módulos quando houver uma responsabilidade reutilizável clara.
