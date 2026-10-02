@@ -83,7 +83,14 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.equal((wizardHtml.match(/data-wizard-step=/g) || []).length, 4);
   assert.match(wizardHtml, /data-add-experience/);
   assert.match(wizardHtml, /data-add-education/);
+  assert.match(wizardHtml, /data-step-next/);
+  assert.match(wizardHtml, /data-step-back/);
+  assert.equal((wizardHtml.match(/type="radio" name="template"/g) || []).length, 3);
   assert.match(wizardHtml, /name="template"/);
+  const dashboardResponse = await call('/pages/app/dashboard.html');
+  const dashboardHtml = await dashboardResponse.text();
+  assert.match(dashboardHtml, /data-home-link/);
+  assert.match(dashboardHtml, /data-member-home="dashboard.html"/);
 
   const plans = await call('/api/plans');
   assert.equal(plans.status, 200);
@@ -115,13 +122,22 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
       title: 'Currículo de teste',
       template: 'classic',
       accent: '#1769aa',
-      data: { name: 'Test User', summary: 'Portfolio' }
+      data: {
+        name: 'Test User',
+        summary: 'Portfolio',
+        experiences: [{ role: 'Analyst', company: 'Example Co', period: '2022–2024', description: 'Reporting' }],
+        education: [{ course: 'Business', school: 'Example College', period: '2020–2022' }],
+        skills: ['Excel', 'Communication']
+      }
     }
   });
   assert.equal(created.status, 201);
   const resume = (await created.json()).resume;
   assert.equal(resume.template, 'classic');
   assert.equal(resume.accent, '#1769aa');
+  assert.equal(resume.data.experiences.length, 1);
+  assert.equal(resume.data.education.length, 1);
+  assert.equal(resume.data.skills.length, 2);
   const exported = await call(`/api/resumes/${resume.id}/export`, { method: 'POST', cookie });
   const exportedHtml = await exported.text();
   assert.equal(exported.status, 200);
