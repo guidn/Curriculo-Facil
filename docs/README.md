@@ -43,7 +43,8 @@ O SQLite de desenvolvimento é criado automaticamente em `backend/data/`. O arqu
 - Recuperação de senha em modo de desenvolvimento.
 - SQLite com usuários, sessões, currículos, uso diário e assinaturas.
 - CRUD de currículos.
-- Três modelos conceituais: Moderno, Clássico e Minimal.
+- Criação guiada em quatro etapas: informações, experiência, formação e modelo.
+- Três modelos simples para teste (Moderno, Clássico e Minimal), com estilos visíveis no editor e na exportação.
 - Editor de currículo com preview ao vivo.
 - Exportação em formato imprimível com botão `Salvar em PDF`.
 - Compartilhamento por link público.
