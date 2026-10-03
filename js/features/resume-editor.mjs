@@ -47,8 +47,8 @@ async function exportResume(id,format='pdf'){
   try{
     const response=await fetch(`/api/resumes/${encodeURIComponent(id)}/export?format=${encodeURIComponent(format)}`,{method:'POST',credentials:'include'});
     if(!response.ok)throw new Error((await response.json()).error||'Falha ao exportar.');
-    if(format==='pdf'){const html=await response.text(),windowRef=window.open('','_blank');if(!windowRef)throw new Error('Permita abrir uma nova janela para imprimir o currículo.');windowRef.document.open();windowRef.document.write(html);windowRef.document.close();return;}
-    const blob=await response.blob(),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`curriculo.${format==='word'?'docx':'txt'}`;link.click();URL.revokeObjectURL(url);toast('Arquivo exportado.','success');
+    if(format==='print'){const html=await response.text(),windowRef=window.open('','_blank');if(!windowRef)throw new Error('Permita abrir uma nova janela para imprimir o currículo.');windowRef.document.open();windowRef.document.write(html);windowRef.document.close();return;}
+    const blob=await response.blob(),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`curriculo.${format==='word'?'docx':format}`;link.click();URL.revokeObjectURL(url);toast('Arquivo exportado.','success');
   }catch(e){toast(e.message,'error')}
 }
 async function shareResume(id){try{const r=await api('/resumes/'+id+'/share',{method:'POST'});await navigator.clipboard?.writeText(r.url);toast(`Link copiado: ${r.url}`,'success')}catch(e){toast(e.message,'error')}}
