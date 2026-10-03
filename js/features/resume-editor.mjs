@@ -51,7 +51,16 @@ async function exportResume(id,format='pdf'){
     const blob=await response.blob(),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download=`curriculo.${format==='word'?'docx':format}`;link.click();URL.revokeObjectURL(url);toast('Arquivo exportado.','success');
   }catch(e){toast(e.message,'error')}
 }
-async function shareResume(id){try{const r=await api('/resumes/'+id+'/share',{method:'POST'});await navigator.clipboard?.writeText(r.url);toast(`Link copiado: ${r.url}`,'success')}catch(e){toast(e.message,'error')}}
+async function shareResume(id){
+  try{
+    const r=await api('/resumes/'+encodeURIComponent(id)+'/share',{method:'POST'});
+    try{
+      if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(r.url);
+      else {const input=document.createElement('textarea');input.value=r.url;input.setAttribute('readonly','');input.style.position='fixed';input.style.opacity='0';document.body.append(input);input.select();const copied=document.execCommand('copy');input.remove();if(!copied)throw new Error('');}
+      toast('Link de compartilhamento copiado.','success');
+    }catch{window.prompt('Copie o link do currículo:',r.url);}
+  }catch(e){toast(e.message,'error')}
+}
 
 export { addEditorEntry, parseLegacyDate, fillEditor, collectEditor, formatPeriod, saveEditor, renderPaper, exportResume, shareResume };
 
