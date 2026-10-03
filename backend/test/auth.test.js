@@ -83,7 +83,7 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.match(homeHtml, /js\/app\.mjs/);
   const wizardPage = await call('/pages/builder/novo-curriculo.html');
   const wizardHtml = await wizardPage.text();
-  assert.equal((wizardHtml.match(/data-wizard-step=/g) || []).length, 4);
+  assert.equal((wizardHtml.match(/data-wizard-step=/g) || []).length, 5);
   assert.match(wizardHtml, /data-add-experience/);
   assert.match(wizardHtml, /data-add-education/);
   assert.match(wizardHtml, /data-step-next/);
@@ -228,6 +228,12 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   const resumeUpdated = await call(`/api/resumes/${resume.id}`, { method: 'PATCH', cookie, payload: { title: 'Currículo atualizado', template: 'executive', accent: '#1f3a5f', data: { ...resume.data, role: 'Analyst' } } });
   assert.equal(resumeUpdated.status, 200);
   assert.equal((await resumeUpdated.json()).resume.template, 'executive');
+  assert.equal((await (await call(`/api/resumes/${resume.id}`, { cookie })).json()).resume.title, 'Currículo atualizado', 'PATCH updates the existing resume');
+  const shared = await call(`/api/resumes/${resume.id}/share`, { method: 'POST', cookie });
+  assert.equal(shared.status, 200);
+  const shareUrl = (await shared.json()).url;
+  assert.match(shareUrl, /\/share\/[a-f0-9]+$/);
+  assert.equal((await call(new URL(shareUrl).pathname)).status, 200, 'the share link opens the saved resume');
 
   const otherEmail = `other-${crypto.randomUUID()}@example.test`;
   const otherRegistration = await call('/api/auth/register', {
