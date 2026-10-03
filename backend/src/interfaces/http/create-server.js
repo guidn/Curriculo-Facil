@@ -3,10 +3,13 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { URL } = require('node:url');
 const PLANS = require('../../domain/plans');
+const { CATALOG } = require('../../domain/resume-policy');
 const { presentUser } = require('../../application/user-presenter');
 const { resumeDto } = require('../../application/resume-use-cases');
 const { parseCookies, setSessionCookie, clearSessionCookie } = require('./session-cookies');
 const { renderResumeHtml } = require('./resume-html');
+const { createDocx } = require('../../infrastructure/exporters/docx');
+const { toText } = require('../../../../js/resume-rendering');
 
 const MIME = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.mjs':'application/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.txt':'text/plain; charset=utf-8','.svg':'image/svg+xml' };
 const rate = new Map();
@@ -74,14 +77,31 @@ async function route(req,res) {
         const result=auth.resetPassword(await body(req));return result.error?json(res,result.status,{error:result.error}):json(res,200,result);
       }
 
-      if(method==='GET' && p==='/api/models') return json(res,200,{models:[{key:'modern',name:'Moderno',description:'Visual limpo com destaque roxo.'},{key:'classic',name:'Clássico',description:'Estrutura tradicional e objetiva.'},{key:'minimal',name:'Minimal',description:'Tipografia leve e bastante espaço.'},{key:'executive',name:'Executivo',description:'Visual corporativo com faixa marinho.'},{key:'creative',name:'Criativo',description:'Composição expressiva em laranja.'}]});
+      if(method==='GET' && p==='/api/models') return json(res,200,{models:CATALOG});
       if(method==='GET' && p==='/api/plans') return json(res,200,{plans:Object.values(PLANS)});
       const user=auth.currentUser(parseCookies(req).cf_session); if(!user) return json(res,401,{error:'Faça login para continuar.'});
       if(method==='GET' && p==='/api/usage')return json(res,200,usage.summary(user));
       if(method==='GET' && p==='/api/resumes') return json(res,200,{resumes:resumes.list(user)});
       if(method==='POST' && p==='/api/resumes') { const result=resumes.create(user,await body(req));if(result?.error)return json(res,result.status,{error:result.error,code:result.code,details:result.details});return json(res,201,{resume:result}); }
       const match=p.match(/^\/api\/resumes\/([^/]+)$/); if(match){const resumeId=match[1];if(method==='GET'){const item=resumes.get(user,resumeId);return item?json(res,200,{resume:item}):json(res,404,{error:'Currículo não encontrado.'});}if(method==='PATCH'){const result=resumes.update(user,resumeId,await body(req));if(!result)return json(res,404,{error:'Currículo não encontrado.'});if(result.error)return json(res,result.status,{error:result.error});return json(res,200,{resume:result});}if(method==='DELETE')return resumes.remove(user,resumeId)?noContent(res):json(res,404,{error:'Currículo não encontrado.'});}
-      const exportMatch=p.match(/^\/api\/resumes\/([^/]+)\/export$/); if(method==='POST'&&exportMatch){const item=resumes.get(user,exportMatch[1]);if(!item)return json(res,404,{error:'Currículo não encontrado.'});if(!usage.consume(user,'exports'))return json(res,429,{error:'Seu limite diário de exportações foi atingido.'});return html(res,200,renderResumeHtml(item,false,user.plan));}
+      const exportMatch=p.match(/^\/api\/resumes\/([^/]+)\/export$/);
+      if(method==='POST'&&exportMatch){
+        const format=u.searchParams.get('format')||'pdf';
+        if(!['pdf','word','txt'].includes(format))return json(res,400,{error:'Formato de exportação inválido.'});
+        const item=resumes.get(user,exportMatch[1]);
+        if(!item)return json(res,404,{error:'Currículo não encontrado.'});
+        if(!usage.consume(user,'exports'))return json(res,429,{error:'Seu limite diário de exportações foi atingido.'});
+        if(format==='pdf')return html(res,200,renderResumeHtml(item));
+        if(format==='txt'){
+          res.statusCode=200;res.setHeader('Content-Type','text/plain; charset=utf-8');
+          res.setHeader('Content-Disposition',`attachment; filename="curriculo-${item.id}.txt"`);
+          return res.end(toText(item));
+        }
+        const file=await createDocx(item);
+        res.statusCode=200;res.setHeader('Content-Type','application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        res.setHeader('Content-Disposition',`attachment; filename="curriculo-${item.id}.docx"`);
+        return res.end(file);
+      }
       const shareMatch=p.match(/^\/api\/resumes\/([^/]+)\/share$/); if(method==='POST'&&shareMatch){const item=resumes.get(user,shareMatch[1]);if(!item)return json(res,404,{error:'Currículo não encontrado.'});if(!usage.consume(user,'shares'))return json(res,429,{error:'Seu limite diário de compartilhamentos foi atingido.'});const raw=security.token(18),t=now();repositories.resumes.setShare(item.id,raw,t);return json(res,200,{url:`${config.appUrl}/share/${raw}`});}
       if(method==='GET'&&p==='/api/profile')return json(res,200,{user:profiles.get(user)});
       if(method==='PATCH'&&p==='/api/profile'){const result=profiles.update(user,await body(req));if(result?.error)return json(res,result.status,{error:result.error});return json(res,200,{user:result});}
@@ -103,3 +123,4 @@ return server;
 }
 
 module.exports={createHttpServer};
+
