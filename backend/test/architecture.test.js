@@ -26,6 +26,8 @@ test('structured resume data keeps legacy fields and optional sections',()=>{
   assert.equal(resume.education[0].institution,'Universidade');
   assert.deepEqual(resume.skills,['Figma','Pesquisa']);
   assert.equal(resume.projects[0].technologies[0],'Figma');
+  assert.throws(()=>normalizeResumeData({experiences:[{startDate:'2025-02-30'}]}),/datas válidas/);
+  assert.throws(()=>normalizeResumeData({education:[{startDate:'2025-03-01',endDate:'2024-03-01'}]}),/posterior/);
   const html=rendering.renderBody(resume);
   assert.match(html,/Formação acadêmica/);
   assert.doesNotMatch(html,/Experiência profissional|Cursos|Certificações/,'empty sections are omitted');
