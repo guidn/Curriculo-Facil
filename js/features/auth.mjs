@@ -13,13 +13,28 @@ export function initHomeLinks() {
   }));
 }
 
+function routeAfterAuth(fallback) {
+  const template = new URLSearchParams(location.search).get('template');
+  return template && ['modern','classic','minimal','executive','creative'].includes(template)
+    ? `../builder/novo-curriculo.html?template=${encodeURIComponent(template)}`
+    : fallback;
+}
+
 export async function initAuth() {
   const login = $('[data-login-form]');
   const register = $('[data-register-form]');
   if (!login && !register) return;
-  if (await currentUser()) return go('../app/dashboard.html');
-  if (login) login.addEventListener('submit', async e => { e.preventDefault(); const email=$('[name=email]',login).value.trim(), password=$('[name=password]',login).value; const btn=$('button',login); btn.disabled=true; try{await api('/auth/login',{method:'POST',body:JSON.stringify({email,password})}); go('../app/dashboard.html')}catch(err){toast(err.message,'error')}finally{btn.disabled=false;} });
-  if (register) register.addEventListener('submit', async e => { e.preventDefault(); const f=new FormData(register); const name=f.get('name')?.trim(),email=f.get('email')?.trim(),password=f.get('password'),confirm=f.get('confirmPassword'); if(password!==confirm)return toast('As senhas não coincidem.','error'); if(!f.get('terms'))return toast('Aceite os termos para continuar.','error'); const btn=$('button',register);btn.disabled=true;try{await api('/auth/register',{method:'POST',body:JSON.stringify({name,email,password})});go('../builder/novo-curriculo.html?onboarding=1')}catch(err){toast(err.message,'error')}finally{btn.disabled=false;} });
+  const requestedTemplate = new URLSearchParams(location.search).get('template');
+  if (requestedTemplate && ['modern','classic','minimal','executive','creative'].includes(requestedTemplate)) {
+    $$('a[href="login.html"],a[href="cadastro.html"]').forEach(link => {
+      const target = new URL(link.getAttribute('href'), location.href);
+      target.searchParams.set('template', requestedTemplate);
+      link.href = `${target.pathname.split('/').pop()}${target.search}`;
+    });
+  }
+  if (await currentUser()) return go(routeAfterAuth('../app/dashboard.html'));
+  if (login) login.addEventListener('submit', async e => { e.preventDefault(); const email=$('[name=email]',login).value.trim(), password=$('[name=password]',login).value; const btn=$('button',login); btn.disabled=true; try{await api('/auth/login',{method:'POST',body:JSON.stringify({email,password})}); go(routeAfterAuth('../app/dashboard.html'))}catch(err){toast(err.message,'error')}finally{btn.disabled=false;} });
+  if (register) register.addEventListener('submit', async e => { e.preventDefault(); const f=new FormData(register); const name=f.get('name')?.trim(),email=f.get('email')?.trim(),password=f.get('password'),confirm=f.get('confirmPassword'); if(password!==confirm)return toast('As senhas não coincidem.','error'); if(!f.get('terms'))return toast('Aceite os termos para continuar.','error'); const btn=$('button',register);btn.disabled=true;try{await api('/auth/register',{method:'POST',body:JSON.stringify({name,email,password})});go(routeAfterAuth('../builder/novo-curriculo.html?onboarding=1'))}catch(err){toast(err.message,'error')}finally{btn.disabled=false;} });
 }
 
 export function initForgotPassword() {
@@ -56,3 +71,4 @@ export function initResetPassword() {
     finally { button.disabled=false; }
   });
 }
+
