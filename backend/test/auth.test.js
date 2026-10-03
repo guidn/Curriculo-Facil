@@ -217,6 +217,8 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.equal(resume.data.languages.length, 2);
   assert.equal(resume.data.projects.length, 2);
   assert.equal(resume.data.projects[0].technologies.length, 2);
+  const invalidResumeDates=await call(`/api/resumes/${resume.id}`,{method:'PATCH',cookie,payload:{data:{experiences:[{startDate:'2025-04-01',endDate:'2024-03-01'}]}}});
+  assert.equal(invalidResumeDates.status,400,'invalid resume date ranges are rejected without a server error');
   const exported = await call(`/api/resumes/${resume.id}/export`, { method: 'POST', cookie });
   const exportedHtml = await exported.text();
   assert.equal(exported.status, 200);
