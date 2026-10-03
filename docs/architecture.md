@@ -63,6 +63,7 @@ Essa aplicação não precisa de ORM, framework de injeção, barramento de even
 - A normalização também lê os campos antigos (`name`, `role`, `school`) para que currículos existentes continuem editáveis. Escritas novas salvam o modelo estruturado.
 - `templates/catalog.json` é o catálogo apresentado pela API, editor e escolha de modelo. Um novo template entra no catálogo com metadados, ganha regras CSS em `css/pages/resume-renderer.css` e continua usando o mesmo conteúdo.
 - `js/resume-rendering.js` é o renderizador sem dependências de framework compartilhado pelo preview no navegador e pelo HTML de impressão no backend. Ele usa texto semântico e omite seções sem conteúdo.
+- A página `pages/builder/demo.html` demonstra o currículo fictício de `backend/test/fixtures/demo-resume.json` sem persistir registros. O endpoint `/api/dev/demo-resume` só responde fora de produção; o servidor estático publica apenas `index.html`, `pages/`, `css/` e `js/`, mantendo o fixture e os demais arquivos internos fora da rota pública.
 - `backend/src/infrastructure/exporters/docx.js` gera OOXML editável com a biblioteca `docx`. `backend/src/infrastructure/exporters/pdf.js` gera PDF A4 no servidor com texto selecionável e fluxo para múltiplas páginas. `toText` no renderizador compartilhado monta o TXT limpo.
 - `format=print` mantém disponível a renderização HTML/CSS para impressão com maior fidelidade visual ao preview; `format=pdf` é o arquivo produzido no backend.
 
