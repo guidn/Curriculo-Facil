@@ -219,7 +219,7 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.equal(resume.data.projects[0].technologies.length, 2);
   const invalidResumeDates=await call(`/api/resumes/${resume.id}`,{method:'PATCH',cookie,payload:{data:{experiences:[{startDate:'2025-04-01',endDate:'2024-03-01'}]}}});
   assert.equal(invalidResumeDates.status,400,'invalid resume date ranges are rejected without a server error');
-  const exported = await call(`/api/resumes/${resume.id}/export`, { method: 'POST', cookie });
+  const exported = await call(`/api/resumes/${resume.id}/export?format=print`, { method: 'POST', cookie });
   const exportedHtml = await exported.text();
   assert.equal(exported.status, 200);
   assert.match(exportedHtml, /resume-paper template-classic/);
@@ -259,6 +259,10 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
 
   const upgrade = await call('/api/billing/dev-activate', { method:'POST', cookie, payload:{plan:'basic'} });
   assert.equal(upgrade.status, 200);
+  const pdf = await call(`/api/resumes/${resume.id}/export?format=pdf`, { method:'POST', cookie });
+  assert.equal(pdf.status,200);
+  assert.match(pdf.headers.get('content-type'),/application\/pdf/);
+  assert.equal((await pdf.text()).slice(0,8),'%PDF-1.3','PDF export produces a searchable PDF document');
   const word = await call(`/api/resumes/${resume.id}/export?format=word`, { method:'POST', cookie });
   assert.equal(word.status, 200);
   assert.match(word.headers.get('content-type'), /application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document/);
