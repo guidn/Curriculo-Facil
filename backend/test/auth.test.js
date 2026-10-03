@@ -180,13 +180,26 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
       data: {
         name: 'Test User',
         summary: 'Portfolio',
-        experiences: [{ role: 'Analyst', company: 'Example Co', startDate: '2022-01-01', endDate: '2024-02-01', description: 'Reporting' }],
-        education: [{ course: 'Business', school: 'Example College', period: '2020–2022' }],
-        skills: ['Excel', 'Communication'],
-        courses: [{name:'Excel avançado',institution:'Escola Exemplo',date:'2024-03-01'}],
+        experiences: [
+          { role: 'Analista de dados', company: 'Example Co', location: 'São Paulo, SP', startDate: '2022-01-01', endDate: '2024-02-01', description: 'Criação de relatórios e indicadores para apoiar decisões.' },
+          { role: 'Assistente de operações', company: 'Empresa Anterior', location: 'Remoto', startDate: '2020-02-01', endDate: '2021-12-01', description: 'Automatização de processos e documentação de rotinas.' }
+        ],
+        education: [
+          { course: 'Administração de Empresas', school: 'Example College', startDate: '2018-02-01', endDate: '2021-12-01' },
+          { course: 'Análise de Dados', school: 'Instituto Exemplo', startDate: '2022-03-01', endDate: '2023-02-01' }
+        ],
+        skills: ['Excel', 'SQL', 'Comunicação', 'Análise de dados', 'Power BI', 'Organização', 'Resolução de problemas', 'Trabalho em equipe'],
+        courses: [
+          {name:'Excel avançado',institution:'Escola Exemplo',date:'2024-03-01'},
+          {name:'Fundamentos de SQL',institution:'Academia Digital',date:'2023-07-01'},
+          {name:'Visualização de dados',institution:'Instituto Exemplo',date:'2023-10-01'}
+        ],
         languages: [{name:'Português',proficiency:'Nativo'},{name:'Inglês',proficiency:'Intermediário'}],
         certifications: [{name:'Certificação de análise',issuer:'Instituto Exemplo',date:'2025-02-01'}],
-        projects: [{name:'Painel de indicadores',description:'Relatórios de desempenho',technologies:['Excel','SQL'],url:'https://example.test/projeto'}],
+        projects: [
+          {name:'Painel de indicadores',description:'Relatórios de desempenho com métricas mensais.',technologies:['Excel','SQL'],url:'https://example.test/projeto'},
+          {name:'Automação de relatórios',description:'Script que consolida arquivos e reduz tarefas manuais.',technologies:['JavaScript','Node.js'],url:'https://example.test/automacao'}
+        ],
         personal: {linkedin:'https://linkedin.com/in/test-user',github:'https://github.com/test-user',portfolio:'https://example.test'}
       }
     }
@@ -195,12 +208,14 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   const resume = (await created.json()).resume;
   assert.equal(resume.template, 'classic');
   assert.equal(resume.accent, '#1769aa');
-  assert.equal(resume.data.experiences.length, 1);
-  assert.equal(resume.data.education.length, 1);
-  assert.equal(resume.data.skills.length, 2);
+  assert.equal(resume.data.experiences.length, 2);
+  assert.equal(resume.data.education.length, 2);
+  assert.equal(resume.data.skills.length, 8);
   assert.equal(resume.data.personal.name, 'Test User');
   assert.equal(resume.data.courses[0].name, 'Excel avançado');
+  assert.equal(resume.data.courses.length, 3);
   assert.equal(resume.data.languages.length, 2);
+  assert.equal(resume.data.projects.length, 2);
   assert.equal(resume.data.projects[0].technologies.length, 2);
   const exported = await call(`/api/resumes/${resume.id}/export`, { method: 'POST', cookie });
   const exportedHtml = await exported.text();
