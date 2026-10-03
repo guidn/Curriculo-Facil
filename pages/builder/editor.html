@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="../../css/components/button.css">
   <link rel="stylesheet" href="../../css/components/form.css">
   <link rel="stylesheet" href="../../css/pages/editor.css">
+  <link rel="stylesheet" href="../../css/pages/resume-renderer.css">
 </head>
 <body class="editor-page">
   <header class="editor-top">
@@ -20,6 +21,8 @@
       <span class="editor-status" data-save-status role="status" aria-live="polite">Todas as alterações salvas</span>
       <button class="button button-ghost button-small" type="button" data-share>Compartilhar</button>
       <button class="button button-secondary button-small" type="button" data-export>Exportar PDF</button>
+      <button class="button button-secondary button-small" type="button" data-export-format="word">Exportar DOCX</button>
+      <button class="button button-secondary button-small" type="button" data-export-format="txt">Exportar TXT</button>
       <button class="button button-secondary button-small" type="button" data-save>Salvar</button>
       <button class="button button-primary button-small save-button" type="button" data-save-preview>Salvar e visualizar</button>
       <button class="button button-secondary button-small" type="button" data-return-editor hidden>← Editar</button>
@@ -37,12 +40,32 @@
             <label class="form-field"><span>Cargo desejado</span><input name="role" placeholder="Ex.: Analista financeiro"></label>
             <div class="editor-two-fields"><label class="form-field"><span>E-mail</span><input name="email" type="email" autocomplete="email"></label><label class="form-field"><span>Telefone</span><input name="phone" type="tel" autocomplete="tel"></label></div>
             <label class="form-field"><span>Cidade</span><input name="city" placeholder="São Paulo - SP"></label>
+            <label class="form-field"><span>Estado ou região</span><input name="state" placeholder="SP"></label>
+            <label class="form-field"><span>LinkedIn</span><input name="linkedin" type="url" placeholder="https://linkedin.com/in/voce"></label>
+            <label class="form-field"><span>GitHub</span><input name="github" type="url" placeholder="https://github.com/voce"></label>
+            <label class="form-field"><span>Portfólio</span><input name="portfolio" type="url" placeholder="https://seusite.com"></label>
             <label class="form-field"><span>Resumo profissional</span><textarea name="summary" rows="4" placeholder="Destaque sua experiência, seus pontos fortes e objetivos."></textarea><small class="field-hint">Dica: mantenha o resumo curto e específico.</small></label>
           </div>
         </details>
         <details class="editor-group">
           <summary><span class="group-icon">02</span><span><strong>Experiência</strong><small>Empregos e resultados</small></span></summary>
           <div class="group-fields"><div data-editor-experiences></div><button type="button" class="button button-secondary button-small add-entry" data-editor-add="experience">＋ Adicionar experiência</button></div>
+        </details>
+        <details class="editor-group">
+          <summary><span class="group-icon">05</span><span><strong>Cursos</strong><small>Cursos livres e treinamentos</small></span></summary>
+          <div class="group-fields"><div data-editor-courses></div><button type="button" class="button button-secondary button-small add-entry" data-editor-add="course">＋ Adicionar curso</button></div>
+        </details>
+        <details class="editor-group">
+          <summary><span class="group-icon">06</span><span><strong>Idiomas</strong><small>Idiomas e nível de proficiência</small></span></summary>
+          <div class="group-fields"><div data-editor-languages></div><button type="button" class="button button-secondary button-small add-entry" data-editor-add="language">＋ Adicionar idioma</button></div>
+        </details>
+        <details class="editor-group">
+          <summary><span class="group-icon">07</span><span><strong>Certificações</strong><small>Certificados profissionais</small></span></summary>
+          <div class="group-fields"><div data-editor-certifications></div><button type="button" class="button button-secondary button-small add-entry" data-editor-add="certification">＋ Adicionar certificação</button></div>
+        </details>
+        <details class="editor-group">
+          <summary><span class="group-icon">08</span><span><strong>Projetos</strong><small>Projetos relevantes para a vaga</small></span></summary>
+          <div class="group-fields"><div data-editor-projects></div><button type="button" class="button button-secondary button-small add-entry" data-editor-add="project">＋ Adicionar projeto</button></div>
         </details>
         <details class="editor-group">
           <summary><span class="group-icon">03</span><span><strong>Formação</strong><small>Estudos e cursos relevantes</small></span></summary>
@@ -61,19 +84,15 @@
     </main>
     <aside class="editor-panel right design-panel" data-design-panel>
       <div class="editor-panel-heading"><span class="eyebrow">Personalize</span><h2>Aparência</h2><p>Escolha o estilo que combina com sua área.</p></div>
-      <section class="editor-section"><div class="section-heading"><strong>Modelo</strong><small>5 estilos disponíveis</small></div><div class="template-options">
-        <button type="button" class="template-choice" data-template="modern"><i class="template-swatch modern-swatch"></i><span><strong>Moderno</strong><small>Limpo e atual</small></span><b>✓</b></button>
-        <button type="button" class="template-choice" data-template="classic"><i class="template-swatch classic-swatch"></i><span><strong>Clássico</strong><small>Tradicional e direto</small></span><b>✓</b></button>
-        <button type="button" class="template-choice" data-template="minimal"><i class="template-swatch minimal-swatch"></i><span><strong>Minimal</strong><small>Leve e discreto</small></span><b>✓</b></button>
-        <button type="button" class="template-choice" data-template="executive"><i class="template-swatch executive-swatch"></i><span><strong>Executivo</strong><small>Corporativo</small></span><b>✓</b></button>
-        <button type="button" class="template-choice" data-template="creative"><i class="template-swatch creative-swatch"></i><span><strong>Criativo</strong><small>Expressivo</small></span><b>✓</b></button>
-      </div></section>
+      <section class="editor-section"><div class="section-heading"><strong>Modelo</strong><small>Troque sem refazer os dados</small></div><div class="template-options" data-template-options></div></section>
       <section class="editor-section"><div class="section-heading"><strong>Cor de destaque</strong><small>Personalize os detalhes</small></div><div class="color-options">
         <button type="button" class="color-choice" data-color="#742cff" style="--c:#742cff" aria-label="Roxo" title="Roxo"></button><button type="button" class="color-choice" data-color="#1769aa" style="--c:#1769aa" aria-label="Azul" title="Azul"></button><button type="button" class="color-choice" data-color="#16805c" style="--c:#16805c" aria-label="Verde" title="Verde"></button><button type="button" class="color-choice" data-color="#1f3a5f" style="--c:#1f3a5f" aria-label="Marinho" title="Marinho"></button><button type="button" class="color-choice" data-color="#d35f12" style="--c:#d35f12" aria-label="Laranja" title="Laranja"></button>
       </div></section>
       <div class="design-note"><strong>Leitura rápida</strong><p>Use bom contraste e mantenha as informações mais importantes no início.</p></div>
     </aside>
   </div>
+  <script src="../../js/resume-rendering.js"></script>
   <script type="module" src="../../js/app.mjs"></script>
 </body>
 </html>
+
