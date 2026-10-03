@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="../../css/components/card.css">
   <link rel="stylesheet" href="../../css/components/form.css">
   <link rel="stylesheet" href="../../css/pages/builder.css">
+  <link rel="stylesheet" href="../../css/pages/resume-renderer.css">
 </head>
 <body>
   <header class="site-header">
@@ -98,13 +99,7 @@
       <section class="wizard-step" data-wizard-step="3" aria-labelledby="step-template-title" hidden>
         <h2 id="step-template-title">Escolha um modelo</h2>
         <p>As prévias abaixo usam as informações que você já preencheu. Você pode trocar o modelo no editor.</p>
-        <div class="template-grid">
-          <label class="template-card"><input type="radio" name="template" value="modern" checked><span class="template-preview template-preview-modern"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Moderno</strong><small>Roxo, limpo e atual</small></label>
-          <label class="template-card"><input type="radio" name="template" value="classic"><span class="template-preview template-preview-classic"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Clássico</strong><small>Azul e tradicional</small></label>
-          <label class="template-card"><input type="radio" name="template" value="minimal"><span class="template-preview template-preview-minimal"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Minimal</strong><small>Verde e discreto</small></label>
-          <label class="template-card"><input type="radio" name="template" value="executive"><span class="template-preview template-preview-executive"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Executivo</strong><small>Marinho e corporativo</small></label>
-          <label class="template-card"><input type="radio" name="template" value="creative"><span class="template-preview template-preview-creative"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Criativo</strong><small>Laranja e expressivo</small></label>
-        </div>
+        <div class="template-grid" data-template-cards></div>
       </section>
 
       <div class="builder-actions wizard-actions">
@@ -117,6 +112,8 @@
       </div>
     </form>
   </main>
+  <script src="../../js/resume-rendering.js"></script>
   <script type="module" src="../../js/app.mjs"></script>
 </body>
 </html>
+
