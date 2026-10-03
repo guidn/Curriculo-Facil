@@ -18,14 +18,14 @@
       <span class="editor-divider"></span><span class="editor-name">Editor de currículo</span>
     </div>
     <div class="editor-top-right">
-      <span class="editor-status" data-save-status role="status" aria-live="polite">Todas as alterações salvas</span>
+      <span class="editor-status" data-save-status data-state="saved" role="status" aria-live="polite">Todas as alterações salvas</span>
+      <button class="button button-ghost button-small" type="button" data-save-retry hidden>Tentar salvar novamente</button>
+      <button class="button button-secondary button-small" type="button" data-appearance-open>Aparência</button>
       <button class="button button-ghost button-small" type="button" data-share>Compartilhar</button>
-      <button class="button button-secondary button-small" type="button" data-export>Exportar PDF</button>
-      <button class="button button-secondary button-small" type="button" data-export-format="word">Exportar DOCX</button>
-      <button class="button button-secondary button-small" type="button" data-export-format="txt">Exportar TXT</button>
+      <details class="editor-export-menu"><summary class="button button-secondary button-small">Exportar ▾</summary><div class="editor-export-options"><button type="button" data-export>PDF</button><button type="button" data-export-format="word">Word (DOCX)</button><button type="button" data-export-format="txt">Texto (TXT)</button></div></details>
       <button class="button button-secondary button-small" type="button" data-save>Salvar</button>
-      <button class="button button-primary button-small save-button" type="button" data-save-preview>Salvar e visualizar</button>
-      <button class="button button-secondary button-small" type="button" data-return-editor hidden>← Editar</button>
+      <button class="button button-primary button-small save-button" type="button" data-save-preview>Visualizar currículo</button>
+      <button class="button button-secondary button-small" type="button" data-return-editor hidden>← Voltar a editar</button>
     </div>
   </header>
   <div class="editor-workspace">
@@ -52,6 +52,14 @@
           <div class="group-fields"><div data-editor-experiences></div><button type="button" class="button button-secondary button-small add-entry" data-editor-add="experience">＋ Adicionar experiência</button></div>
         </details>
         <details class="editor-group">
+          <summary><span class="group-icon">03</span><span><strong>Formação</strong><small>Estudos e cursos relevantes</small></span></summary>
+          <div class="group-fields"><div data-editor-education></div><button type="button" class="button button-secondary button-small add-entry" data-editor-add="education">＋ Adicionar formação</button></div>
+        </details>
+        <details class="editor-group">
+          <summary><span class="group-icon">04</span><span><strong>Habilidades</strong><small>Competências e ferramentas</small></span></summary>
+          <div class="group-fields"><label class="form-field"><span>Habilidades</span><input name="skills" placeholder="Ex.: Excel, comunicação, vendas"></label><small class="field-hint">Separe cada habilidade com vírgula.</small></div>
+        </details>
+        <details class="editor-group">
           <summary><span class="group-icon">05</span><span><strong>Cursos</strong><small>Cursos livres e treinamentos</small></span></summary>
           <div class="group-fields"><div data-editor-courses></div><button type="button" class="button button-secondary button-small add-entry" data-editor-add="course">＋ Adicionar curso</button></div>
         </details>
@@ -67,14 +75,6 @@
           <summary><span class="group-icon">08</span><span><strong>Projetos</strong><small>Projetos relevantes para a vaga</small></span></summary>
           <div class="group-fields"><div data-editor-projects></div><button type="button" class="button button-secondary button-small add-entry" data-editor-add="project">＋ Adicionar projeto</button></div>
         </details>
-        <details class="editor-group">
-          <summary><span class="group-icon">03</span><span><strong>Formação</strong><small>Estudos e cursos relevantes</small></span></summary>
-          <div class="group-fields"><div data-editor-education></div><button type="button" class="button button-secondary button-small add-entry" data-editor-add="education">＋ Adicionar formação</button></div>
-        </details>
-        <details class="editor-group">
-          <summary><span class="group-icon">04</span><span><strong>Habilidades</strong><small>Competências e ferramentas</small></span></summary>
-          <div class="group-fields"><label class="form-field"><span>Habilidades</span><input name="skills" placeholder="Ex.: Excel, comunicação, vendas"></label><small class="field-hint">Separe cada habilidade com vírgula.</small></div>
-        </details>
         <input type="hidden" name="template" value="modern"><input type="hidden" name="accent" value="#742cff">
       </form>
     </aside>
@@ -82,15 +82,17 @@
       <div class="preview-toolbar"><div><strong>Prévia</strong><span>A4 · Atualizada automaticamente</span></div><div class="zoom-control" aria-label="Zoom da prévia"><button type="button" data-zoom="out" aria-label="Diminuir zoom">−</button><span data-zoom-label>100%</span><button type="button" data-zoom="in" aria-label="Aumentar zoom">＋</button><button type="button" data-zoom="fit" aria-label="Ajustar à tela">Ajustar</button></div></div>
       <div class="paper-stage"><article class="paper" data-paper aria-label="Prévia do currículo"></article></div>
     </main>
-    <aside class="editor-panel right design-panel" data-design-panel>
-      <div class="editor-panel-heading"><span class="eyebrow">Personalize</span><h2>Aparência</h2><p>Escolha o estilo que combina com sua área.</p></div>
+  </div>
+  <dialog class="appearance-dialog" data-appearance-dialog aria-labelledby="appearance-title">
+    <div class="appearance-dialog-head"><div><span class="eyebrow">Personalize</span><h2 id="appearance-title">Aparência do currículo</h2></div><button class="button button-ghost button-small" type="button" data-appearance-close aria-label="Fechar aparência">Fechar</button></div>
+    <div class="appearance-dialog-body">
       <section class="editor-section"><div class="section-heading"><strong>Modelo</strong><small>Troque sem refazer os dados</small></div><div class="template-options" data-template-options></div></section>
       <section class="editor-section"><div class="section-heading"><strong>Cor de destaque</strong><small>Personalize os detalhes</small></div><div class="color-options">
         <button type="button" class="color-choice" data-color="#742cff" style="--c:#742cff" aria-label="Roxo" title="Roxo"></button><button type="button" class="color-choice" data-color="#1769aa" style="--c:#1769aa" aria-label="Azul" title="Azul"></button><button type="button" class="color-choice" data-color="#16805c" style="--c:#16805c" aria-label="Verde" title="Verde"></button><button type="button" class="color-choice" data-color="#1f3a5f" style="--c:#1f3a5f" aria-label="Marinho" title="Marinho"></button><button type="button" class="color-choice" data-color="#d35f12" style="--c:#d35f12" aria-label="Laranja" title="Laranja"></button>
       </div></section>
       <div class="design-note"><strong>Leitura rápida</strong><p>Use bom contraste e mantenha as informações mais importantes no início.</p></div>
-    </aside>
-  </div>
+    </div>
+  </dialog>
   <script src="../../js/resume-rendering.js"></script>
   <script type="module" src="../../js/app.mjs"></script>
 </body>
