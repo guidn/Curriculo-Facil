@@ -35,6 +35,49 @@ test('structured resume data keeps legacy fields and optional sections',()=>{
   assert.match(rendering.toText({title:'Ana',data:resume}),/HABILIDADES/);
 });
 
+test('fictional demo resume retains every section in all five renderer templates',()=>{
+  const fs=require('node:fs');
+  const path=require('node:path');
+  const demo=JSON.parse(fs.readFileSync(path.join(__dirname,'fixtures/demo-resume.json'),'utf8'));
+  assert.equal(demo.data.experiences.length,2);
+  assert.equal(demo.data.education.length,2);
+  assert.equal(demo.data.courses.length,3);
+  assert.equal(demo.data.skills.length,8);
+  assert.equal(demo.data.languages.length,2);
+  assert.equal(demo.data.projects.length,2);
+  assert.equal(demo.data.certifications.length,2);
+  for(const template of ['modern','classic','minimal','executive','creative']){
+    const html=rendering.renderDocument({...demo,template});
+    for(const content of ['Ana Ribeiro','Nuvem Exemplo','Universidade Metropolitana','Fundamentos de Product Management','Product Analytics Essentials','Central de indicadores','Inglês'])assert.ok(html.includes(content),`${template} omitted ${content}`);
+  }
+  const escaped=rendering.renderBody({name:'<script>alert(1)</script>',summary:'A & B'});
+  assert.doesNotMatch(escaped,/<script>/);
+  assert.match(escaped,/A &amp; B/);
+});
+
+test('new resume wizard includes a separate review stage and uses the shared renderer',()=>{
+  const fs=require('node:fs');
+  const path=require('node:path');
+  const html=fs.readFileSync(path.join(__dirname,'../../pages/builder/novo-curriculo.html'),'utf8');
+  const controller=fs.readFileSync(path.join(__dirname,'../../js/features/new-resume.mjs'),'utf8');
+  assert.match(html,/data-wizard-step="4"/);
+  assert.match(html,/data-final-preview/);
+  assert.match(controller,/ResumeRendering\.renderBody/);
+  assert.match(controller,/activeStep !== panels\.length - 1/);
+});
+
+test('model library keeps real renderer previews and carries template choice into signup',()=>{
+  const fs=require('node:fs');
+  const path=require('node:path');
+  const html=fs.readFileSync(path.join(__dirname,'../../pages/builder/modelos.html'),'utf8');
+  const feature=fs.readFileSync(path.join(__dirname,'../../js/features/billing.mjs'),'utf8');
+  const auth=fs.readFileSync(path.join(__dirname,'../../js/features/auth.mjs'),'utf8');
+  assert.match(html,/css\/pages\/resume-renderer\.css/);
+  assert.match(feature,/ResumeRendering\.renderBody/);
+  assert.match(feature,/\.\.\/auth\/cadastro\.html/);
+  assert.match(auth,/routeAfterAuth/);
+});
+
 test('authentication use cases depend on repository and security ports',async()=>{
   const records={users:[],sessions:[],resets:[]};
   const users={findByEmail:email=>records.users.find(user=>user.email===email),findById:id=>records.users.find(user=>user.id===id),create:user=>records.users.push({...user,plan:'free',resumeProfile:{}}),updatePassword:(id,passwordHash)=>{records.users.find(user=>user.id===id).passwordHash=passwordHash}};
