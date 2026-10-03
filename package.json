@@ -12,5 +12,10 @@
   },
   "engines": {
     "node": ">=22.5"
+  },
+  "dependencies": {
+    "docx": "^9.8.1",
+    "pdfkit": "^0.17.2"
   }
 }
+

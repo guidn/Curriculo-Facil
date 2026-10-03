@@ -1,0 +1,43 @@
+{
+  "title": "Rafael Costa — Desenvolvedor de Software",
+  "template": "modern",
+  "accent": "#742cff",
+  "data": {
+    "personal": {
+      "name": "Rafael Costa",
+      "headline": "Desenvolvedor de Software Júnior",
+      "email": "rafael.dev@example.test",
+      "phone": "(11) 98888-1234",
+      "city": "São Paulo",
+      "state": "SP",
+      "linkedin": "https://www.linkedin.com/in/rafael-costa-example",
+      "github": "https://github.com/rafael-costa-example",
+      "portfolio": "https://rafael-costa.example.test"
+    },
+    "summary": "Desenvolvedor em início de carreira com experiência prática na criação de aplicações web, APIs e ferramentas internas. Trabalha com JavaScript, Node.js e bancos relacionais, participando de todo o ciclo de desenvolvimento, da conversa sobre requisitos à publicação. Valoriza código legível, colaboração e melhoria contínua, com foco em construir produtos úteis e confiáveis.",
+    "experiences": [
+      { "role": "Desenvolvedor Web Júnior", "company": "Tech Solutions", "location": "São Paulo, SP", "startDate": "2025-01-01", "current": true, "description": ["Desenvolveu fluxos de cadastro e painéis internos em JavaScript, reduzindo etapas manuais usadas pela equipe de operações.", "Implementou endpoints REST e consultas SQL com validação de dados e tratamento consistente de erros.", "Colaborou em revisões de código, correção de defeitos e documentação de decisões técnicas."] },
+      { "role": "Estagiário de Desenvolvimento", "company": "Digital Systems", "location": "São Paulo, SP", "startDate": "2024-01-01", "endDate": "2024-12-01", "description": ["Criou páginas responsivas e componentes acessíveis com HTML, CSS e JavaScript.", "Automatizou relatórios recorrentes usando scripts e consultas PostgreSQL, economizando cerca de quatro horas por semana.", "Apoiou testes de funcionalidades e organizou tarefas técnicas com produto e design."] }
+    ],
+    "education": [
+      { "course": "Tecnologia em Jogos Digitais", "institution": "FATEC São Paulo", "location": "São Paulo, SP", "startDate": "2025-02-01", "endDate": "2028-12-01", "current": true },
+      { "course": "Técnico em Desenvolvimento de Sistemas", "institution": "ETEC Parque da Juventude", "location": "São Paulo, SP", "startDate": "2022-02-01", "endDate": "2024-12-01" }
+    ],
+    "courses": [
+      { "name": "Python e Análise de Dados", "institution": "Escola de Dados", "date": "2025-06-01" },
+      { "name": "PostgreSQL e SQL", "institution": "Trilha Tech", "date": "2024-10-01" },
+      { "name": "Desenvolvimento Web Full Stack", "institution": "Laboratório Digital", "date": "2024-05-01" }
+    ],
+    "skills": ["JavaScript", "HTML", "CSS", "Node.js", "SQL", "PostgreSQL", "Git", "GitHub"],
+    "languages": [{ "name": "Português", "proficiency": "Nativo" }, { "name": "Inglês", "proficiency": "Intermediário" }],
+    "certifications": [
+      { "name": "Fundamentos de APIs REST", "issuer": "Trilha Tech", "date": "2025-03-01" },
+      { "name": "Consultas e Modelagem SQL", "issuer": "Escola de Dados", "date": "2024-08-01" }
+    ],
+    "projects": [
+      { "name": "Sistema de Gestão Web", "description": "Aplicação para organizar solicitações, tarefas e indicadores de uma equipe pequena. Criou autenticação, operações CRUD e uma API documentada, com foco em formulários claros e respostas previsíveis.", "technologies": ["JavaScript", "Node.js", "SQLite"], "url": "https://rafael-costa.example.test/gestao" },
+      { "name": "Plataforma de Currículos", "description": "Editor de currículos com dados estruturados e modelos reutilizáveis. Implementou preview ao vivo, formulários repetíveis e exportação de texto para validar a ordem e a legibilidade do conteúdo.", "technologies": ["HTML", "CSS", "JavaScript", "Node.js"], "url": "https://rafael-costa.example.test/curriculos" }
+    ]
+  }
+}
+

@@ -9,6 +9,7 @@
   <link rel="stylesheet" href="../../css/components/card.css">
   <link rel="stylesheet" href="../../css/components/form.css">
   <link rel="stylesheet" href="../../css/pages/builder.css">
+  <link rel="stylesheet" href="../../css/pages/resume-renderer.css">
 </head>
 <body>
   <header class="site-header">
@@ -34,8 +35,9 @@
         <button class="step" type="button" data-wizard-nav="1">2 · Experiência</button>
         <button class="step" type="button" data-wizard-nav="2">3 · Formação</button>
         <button class="step" type="button" data-wizard-nav="3">4 · Modelo</button>
+        <button class="step" type="button" data-wizard-nav="4">5 · Revisão</button>
       </nav>
-      <div class="progress" role="progressbar" aria-label="Progresso do currículo" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1">
+      <div class="progress" role="progressbar" aria-label="Progresso do currículo" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1">
         <span data-wizard-progress></span>
       </div>
 
@@ -98,13 +100,13 @@
       <section class="wizard-step" data-wizard-step="3" aria-labelledby="step-template-title" hidden>
         <h2 id="step-template-title">Escolha um modelo</h2>
         <p>As prévias abaixo usam as informações que você já preencheu. Você pode trocar o modelo no editor.</p>
-        <div class="template-grid">
-          <label class="template-card"><input type="radio" name="template" value="modern" checked><span class="template-preview template-preview-modern"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Moderno</strong><small>Roxo, limpo e atual</small></label>
-          <label class="template-card"><input type="radio" name="template" value="classic"><span class="template-preview template-preview-classic"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Clássico</strong><small>Azul e tradicional</small></label>
-          <label class="template-card"><input type="radio" name="template" value="minimal"><span class="template-preview template-preview-minimal"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Minimal</strong><small>Verde e discreto</small></label>
-          <label class="template-card"><input type="radio" name="template" value="executive"><span class="template-preview template-preview-executive"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Executivo</strong><small>Marinho e corporativo</small></label>
-          <label class="template-card"><input type="radio" name="template" value="creative"><span class="template-preview template-preview-creative"><b data-preview-name>Seu nome</b><small data-preview-role>Cargo desejado</small><small data-preview-contact>Seu contato</small><i></i><small data-preview-summary>Resumo profissional</small><i></i><small data-preview-experience>Experiência profissional</small><small data-preview-education>Formação acadêmica</small><small data-preview-skills>Habilidades</small></span><strong>Criativo</strong><small>Laranja e expressivo</small></label>
-        </div>
+        <div class="template-grid" data-template-cards></div>
+      </section>
+
+      <section class="wizard-step" data-wizard-step="4" aria-labelledby="step-review-title" hidden>
+        <h2 id="step-review-title">Revise seu currículo</h2>
+        <p>Confira o conteúdo e o modelo antes de criar. Você poderá editar tudo depois.</p>
+        <div class="creation-preview-frame" data-final-preview aria-live="polite"></div>
       </section>
 
       <div class="builder-actions wizard-actions">
@@ -112,11 +114,13 @@
         <div class="wizard-navigation">
           <button class="button button-secondary" type="button" data-step-back hidden>← Voltar</button>
           <button class="button button-primary" type="button" data-step-next>Continuar →</button>
-          <button class="button button-primary" type="submit" data-step-submit hidden>Criar e abrir editor →</button>
+          <button class="button button-primary" type="submit" data-step-submit hidden>Criar currículo →</button>
         </div>
       </div>
     </form>
   </main>
+  <script src="../../js/resume-rendering.js"></script>
   <script type="module" src="../../js/app.mjs"></script>
 </body>
 </html>
+
