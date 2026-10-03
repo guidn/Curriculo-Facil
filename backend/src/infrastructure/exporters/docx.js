@@ -2,6 +2,7 @@
 
 const { Document, Packer, Paragraph, TextRun, HeadingLevel, ExternalHyperlink, AlignmentType } = require('docx');
 const { normalize } = require('../../../../js/resume-rendering');
+const safeUrl = value => /^https?:\/\//i.test(String(value || '')) ? String(value) : '';
 
 function createDocx(resume) {
   const data = normalize(resume.data || {}), children = [];
@@ -20,7 +21,7 @@ function createDocx(resume) {
   add('Habilidades',data.skills.map(bullet));
   add('Idiomas',data.languages.map(x=>bullet([x.name,x.proficiency || x.level].filter(Boolean).join(' · '))));
   add('Certificações',data.certifications.map(x=>bullet([x.name,x.issuer,x.date].filter(Boolean).join(' · '))));
-  add('Projetos',data.projects.flatMap(x=>[text(x.name,{bold:true}),...(x.description?[text(x.description)]:[]),...(x.technologies.length?[text(`Tecnologias: ${x.technologies.join(', ')}`)]:[]),...(x.url?[new Paragraph({children:[new ExternalHyperlink({link:x.url,children:[new TextRun({text:x.url,style:'Hyperlink'})]})]})]:[])]));
+  add('Projetos',data.projects.flatMap(x=>[text(x.name,{bold:true}),...(x.description?[text(x.description)]:[]),...(x.technologies.length?[text(`Tecnologias: ${x.technologies.join(', ')}`)]:[]),...(safeUrl(x.url)?[new Paragraph({children:[new ExternalHyperlink({link:safeUrl(x.url),children:[new TextRun({text:safeUrl(x.url),style:'Hyperlink'})]})]})]:[])]));
   const document = new Document({sections:[{properties:{page:{size:{width:11906,height:16838},margin:{top:1134,right:1077,bottom:1134,left:1077}}},children}],styles:{default:{document:{run:{font:'Arial',size:21},paragraph:{spacing:{line:276}}}}}});
   return Packer.toBuffer(document);
 }
