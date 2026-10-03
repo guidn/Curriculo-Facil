@@ -2,6 +2,18 @@
 
 const text = (value, limit = 2000) => String(value ?? '').trim().slice(0, limit);
 const list = (value, mapper, limit = 40) => (Array.isArray(value) ? value : []).slice(0, limit).map(mapper).filter(Boolean);
+function date(value) {
+  const candidate=text(value,10);
+  if(!candidate)return '';
+  const parsed=new Date(`${candidate}T00:00:00.000Z`);
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(candidate)||Number.isNaN(parsed.valueOf())||parsed.toISOString().slice(0,10)!==candidate)throw new Error('Informe datas válidas no formato de calendário.');
+  return candidate;
+}
+function dateRange(item) {
+  const startDate=date(item?.startDate),current=item?.current===true,endDate=current?'':date(item?.endDate);
+  if(startDate&&endDate&&startDate>endDate)throw new Error('A data de término deve ser igual ou posterior à data de início.');
+  return {startDate,endDate,current};
+}
 
 function normalizeResumeData(input = {}) {
   const source = input && typeof input === 'object' && !Array.isArray(input) ? input : {};
@@ -23,13 +35,13 @@ function normalizeResumeData(input = {}) {
     summary: text(source.summary, 3000),
     experiences: entries('experiences', item => ({
       company: text(item?.company, 160), role: text(item?.role, 160), location: text(item?.location, 120),
-      startDate: text(item?.startDate, 10), endDate: item?.current ? '' : text(item?.endDate, 10), current: item?.current === true,
+      ...dateRange(item),
       period: text(item?.period, 100),
       description: Array.isArray(item?.description) ? list(item.description, value => text(value, 800), 20) : text(item?.description, 3000).split(/\r?\n/).map(value => text(value, 800)).filter(Boolean)
     })).filter(item => Object.values(item).some(value => Array.isArray(value) ? value.length : value !== '' && value !== false)),
     education: entries('education', item => ({
       institution: text(item?.institution ?? item?.school, 180), course: text(item?.course, 180), location: text(item?.location, 120),
-      startDate: text(item?.startDate, 10), endDate: item?.current ? '' : text(item?.endDate, 10), current: item?.current === true,
+      ...dateRange(item),
       period: text(item?.period, 100),
       description: text(item?.description, 1200)
     })).filter(item => Object.values(item).some(value => value !== '' && value !== false)),
