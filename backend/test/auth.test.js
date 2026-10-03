@@ -88,19 +88,25 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.match(wizardHtml, /data-add-education/);
   assert.match(wizardHtml, /data-step-next/);
   assert.match(wizardHtml, /data-step-back/);
-  assert.equal((wizardHtml.match(/type="radio" name="template"/g) || []).length, 5);
-  assert.match(wizardHtml, /data-preview-name/);
+  assert.match(wizardHtml, /data-template-cards/);
+  assert.match(wizardHtml, /resume-rendering\.js/);
   assert.match(wizardHtml, /name="experienceStartDate" type="date"/);
-  assert.match(wizardHtml, /name="template"/);
+  assert.match(await (await call('/js/features/new-resume.mjs')).text(), /name="template"/);
   const editorPage = await call('/pages/builder/editor.html');
   const editorHtml = await editorPage.text();
   assert.match(editorHtml, /data-save-preview/);
+  assert.match(editorHtml, /data-editor-courses/);
+  assert.match(editorHtml, /data-editor-languages/);
+  assert.match(editorHtml, /data-editor-certifications/);
+  assert.match(editorHtml, /data-editor-projects/);
+  assert.match(editorHtml, /data-export-format="word"/);
   assert.match(editorHtml, /data-return-editor/);
   assert.match(editorHtml, /editor-back/);
   assert.doesNotMatch(editorHtml, /data-editor-view/);
   assert.match(editorHtml, /data-save-status/);
   assert.match(editorHtml, /data-zoom="fit"/);
-  assert.match(editorHtml, /data-template="creative"/);
+  assert.match(editorHtml, /data-template-options/);
+  assert.match(await (await call('/js/features/editor.mjs')).text(), /data-template="\$\{escapeHtml\(item\.id\)\}"/);
   const profilePage = await call('/pages/app/perfil.html');
   const profileHtml = await profilePage.text();
   assert.match(profileHtml, /Informações para o currículo/);
@@ -128,7 +134,10 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.equal((await plans.json()).plans.length, 3);
   const models = await call('/api/models');
   assert.equal(models.status, 200);
-  assert.equal((await models.json()).models.length, 5);
+  const modelCatalog=(await models.json()).models;
+  assert.equal(modelCatalog.length, 5);
+  assert.equal(modelCatalog[0].id,'modern');
+  assert.ok(modelCatalog.every(model=>model.atsFriendly && model.accent));
   assert.match(profileHtml, /profile-session-card/);
   assert.match(profileHtml, /profile-brand-mark/);
   const authClient = await call('/js/features/auth.mjs');
@@ -173,7 +182,12 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
         summary: 'Portfolio',
         experiences: [{ role: 'Analyst', company: 'Example Co', startDate: '2022-01-01', endDate: '2024-02-01', description: 'Reporting' }],
         education: [{ course: 'Business', school: 'Example College', period: '2020–2022' }],
-        skills: ['Excel', 'Communication']
+        skills: ['Excel', 'Communication'],
+        courses: [{name:'Excel avançado',institution:'Escola Exemplo',date:'2024-03-01'}],
+        languages: [{name:'Português',proficiency:'Nativo'},{name:'Inglês',proficiency:'Intermediário'}],
+        certifications: [{name:'Certificação de análise',issuer:'Instituto Exemplo',date:'2025-02-01'}],
+        projects: [{name:'Painel de indicadores',description:'Relatórios de desempenho',technologies:['Excel','SQL'],url:'https://example.test/projeto'}],
+        personal: {linkedin:'https://linkedin.com/in/test-user',github:'https://github.com/test-user',portfolio:'https://example.test'}
       }
     }
   });
@@ -184,11 +198,15 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.equal(resume.data.experiences.length, 1);
   assert.equal(resume.data.education.length, 1);
   assert.equal(resume.data.skills.length, 2);
+  assert.equal(resume.data.personal.name, 'Test User');
+  assert.equal(resume.data.courses[0].name, 'Excel avançado');
+  assert.equal(resume.data.languages.length, 2);
+  assert.equal(resume.data.projects[0].technologies.length, 2);
   const exported = await call(`/api/resumes/${resume.id}/export`, { method: 'POST', cookie });
   const exportedHtml = await exported.text();
   assert.equal(exported.status, 200);
-  assert.match(exportedHtml, /paper template-classic/);
-  assert.match(exportedHtml, /template-classic \.head/);
+  assert.match(exportedHtml, /resume-paper template-classic/);
+  assert.match(exportedHtml, /template-classic \.resume-header/);
   assert.match(exportedHtml, /2022/);
   const resumeUpdated = await call(`/api/resumes/${resume.id}`, { method: 'PATCH', cookie, payload: { title: 'Currículo atualizado', template: 'executive', accent: '#1f3a5f', data: { ...resume.data, role: 'Analyst' } } });
   assert.equal(resumeUpdated.status, 200);
@@ -221,6 +239,19 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.equal((await call(`/api/resumes/${second.id}`, { method: 'DELETE', cookie })).status, 204);
   assert.equal((await call(`/api/resumes/${second.id}`, { cookie })).status, 404);
   assert.equal((await (await call('/api/usage', { cookie })).json()).resumeCapacity.available, 1, 'deleting a resume releases a saved slot');
+
+  const upgrade = await call('/api/billing/dev-activate', { method:'POST', cookie, payload:{plan:'basic'} });
+  assert.equal(upgrade.status, 200);
+  const word = await call(`/api/resumes/${resume.id}/export?format=word`, { method:'POST', cookie });
+  assert.equal(word.status, 200);
+  assert.match(word.headers.get('content-type'), /application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document/);
+  assert.deepEqual([...new Uint8Array(await word.arrayBuffer()).slice(0,2)], [0x50,0x4b], 'DOCX is a zipped OOXML document');
+  const plain = await call(`/api/resumes/${resume.id}/export?format=txt`, { method:'POST', cookie });
+  assert.equal(plain.status, 200);
+  assert.match(plain.headers.get('content-type'), /text\/plain/);
+  assert.match(await plain.text(), /EXPERIÊNCIA PROFISSIONAL/);
+  const badFormat = await call(`/api/resumes/${resume.id}/export?format=html`, { method:'POST', cookie });
+  assert.equal(badFormat.status, 400, 'invalid export formats are rejected');
 
   const csrf = await call('/api/resumes', {
     method: 'POST',
@@ -280,3 +311,4 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   }
   assert.equal(rateResponses.at(-1).status, 429, 'login attempts should be rate limited');
 });
+
