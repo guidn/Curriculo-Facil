@@ -39,7 +39,7 @@ Abra `http://localhost:3000`. O banco SQLite local é criado automaticamente em 
 - Perfil com dados reutilizáveis, editor, salvamento e prévia.
 - CRUD de currículos com conteúdo estruturado e cinco modelos selecionáveis sem duplicar dados.
 - Seções editáveis de experiência, formação, cursos, habilidades, idiomas, certificações e projetos; campos vazios são omitidos na renderização.
-- Exportação em HTML para impressão/PDF, DOCX editável e TXT. O PDF ainda depende do diálogo de impressão do navegador; consulte `architecture.md` antes de tratar a exportação como serviço de produção.
+- Exportação de PDF A4 pesquisável no backend, DOCX editável, TXT limpo e HTML/CSS para impressão; consulte `architecture.md` para os limites de cada formato.
 - Limites por plano e assinatura pendente de gateway.
 
 O checkout ainda não realiza cobranças. O envio de e-mail real exige as variáveis secretas `RESEND_API_KEY` e `EMAIL_FROM`; não as adicione ao repositório. Para a integração de produção, siga `docs/production-roadmap.md`.
