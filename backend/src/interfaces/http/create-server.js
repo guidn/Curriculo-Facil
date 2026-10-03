@@ -27,6 +27,8 @@ function sendStatic(req,res,urlPath) {
   let pathname = decodeURIComponent(urlPath === '/' ? '/index.html' : urlPath);
   const full = path.resolve(config.rootDir, '.' + pathname);
   if (full !== config.rootDir && !full.startsWith(config.rootDir + path.sep)) return false;
+  const relative=path.relative(config.rootDir,full).split(path.sep);
+  if (!(relative.length===1&&relative[0]==='index.html')&&!['pages','css','js'].includes(relative[0])) return false;
   if (!fs.existsSync(full) || fs.statSync(full).isDirectory()) return false;
   const ext=path.extname(full); res.statusCode=200; res.setHeader('Content-Type',MIME[ext]||'application/octet-stream'); fs.createReadStream(full).pipe(res); return true;
 }
@@ -80,6 +82,12 @@ async function route(req,res) {
 
       if(method==='GET' && p==='/api/models') return json(res,200,{models:CATALOG});
       if(method==='GET' && p==='/api/plans') return json(res,200,{plans:Object.values(PLANS)});
+      if(method==='GET' && p==='/api/dev/demo-resume'){
+        if(config.nodeEnv==='production')return json(res,404,{error:'Demonstração indisponível.'});
+        const demo=JSON.parse(fs.readFileSync(path.join(config.rootDir,'backend/test/fixtures/demo-resume.json'),'utf8'));
+        res.setHeader('Cache-Control','no-store');
+        return json(res,200,{resume:demo});
+      }
       const user=auth.currentUser(parseCookies(req).cf_session); if(!user) return json(res,401,{error:'Faça login para continuar.'});
       if(method==='GET' && p==='/api/usage')return json(res,200,usage.summary(user));
       if(method==='GET' && p==='/api/resumes') return json(res,200,{resumes:resumes.list(user)});
