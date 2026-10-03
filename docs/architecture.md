@@ -56,3 +56,15 @@ A regra de dependência é voltada para dentro: domínio não importa HTTP, SQLi
 6. Execute `npm test` e `npm run check`.
 
 Essa aplicação não precisa de ORM, framework de injeção, barramento de eventos ou múltiplas camadas de repositório genérico. As portas existentes são pequenas e ligadas a necessidades concretas. A regra de dependência e o objetivo de manter regras testáveis seguem a [descrição original da Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html); a configuração segura do runtime deve continuar seguindo as [práticas de segurança do Node.js](https://nodejs.org/en/learn/getting-started/security-best-practices).
+
+## Currículos, templates e exportação
+
+- `backend/src/domain/resume-data.js` normaliza o JSON persistido. `personal`, experiências, formação, cursos, habilidades, idiomas, certificações e projetos são dados do currículo; o identificador visual permanece em `template`.
+- A normalização também lê os campos antigos (`name`, `role`, `school`) para que currículos existentes continuem editáveis. Escritas novas salvam o modelo estruturado.
+- `templates/catalog.json` é o catálogo apresentado pela API, editor e escolha de modelo. Um novo template entra no catálogo com metadados, ganha regras CSS em `css/pages/resume-renderer.css` e continua usando o mesmo conteúdo.
+- `js/resume-rendering.js` é o renderizador sem dependências de framework compartilhado pelo preview no navegador e pelo HTML de impressão no backend. Ele usa texto semântico e omite seções sem conteúdo.
+- `backend/src/infrastructure/exporters/docx.js` gera OOXML editável com a biblioteca `docx`. `toText` no renderizador compartilhado monta o TXT limpo.
+- A saída PDF abre o HTML do template para impressão do navegador, preservando texto selecionável e regras A4. A geração em servidor/headless continua necessária para uma fila PDF confiável em produção.
+
+O editor preserva a ordem dos arrays quando salva; a interface ainda não oferece reordenação por arrastar e soltar.
+
