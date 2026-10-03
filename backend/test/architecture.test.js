@@ -48,7 +48,7 @@ test('fictional demo resume retains every section in all five renderer templates
   assert.equal(demo.data.certifications.length,2);
   for(const template of ['modern','classic','minimal','executive','creative']){
     const html=rendering.renderDocument({...demo,template});
-    for(const content of ['Ana Ribeiro','Nuvem Exemplo','Universidade Metropolitana','Fundamentos de Product Management','Product Analytics Essentials','Central de indicadores','Inglês'])assert.ok(html.includes(content),`${template} omitted ${content}`);
+    for(const content of ['Rafael Costa','Tech Solutions','FATEC São Paulo','Python e Análise de Dados','Fundamentos de APIs REST','Sistema de Gestão Web','Inglês'])assert.ok(html.includes(content),`${template} omitted ${content}`);
   }
   const escaped=rendering.renderBody({name:'<script>alert(1)</script>',summary:'A & B'});
   assert.doesNotMatch(escaped,/<script>/);
