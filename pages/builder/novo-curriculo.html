@@ -35,8 +35,9 @@
         <button class="step" type="button" data-wizard-nav="1">2 · Experiência</button>
         <button class="step" type="button" data-wizard-nav="2">3 · Formação</button>
         <button class="step" type="button" data-wizard-nav="3">4 · Modelo</button>
+        <button class="step" type="button" data-wizard-nav="4">5 · Revisão</button>
       </nav>
-      <div class="progress" role="progressbar" aria-label="Progresso do currículo" aria-valuemin="1" aria-valuemax="4" aria-valuenow="1">
+      <div class="progress" role="progressbar" aria-label="Progresso do currículo" aria-valuemin="1" aria-valuemax="5" aria-valuenow="1">
         <span data-wizard-progress></span>
       </div>
 
@@ -102,12 +103,18 @@
         <div class="template-grid" data-template-cards></div>
       </section>
 
+      <section class="wizard-step" data-wizard-step="4" aria-labelledby="step-review-title" hidden>
+        <h2 id="step-review-title">Revise seu currículo</h2>
+        <p>Confira o conteúdo e o modelo antes de criar. Você poderá editar tudo depois.</p>
+        <div class="creation-preview-frame" data-final-preview aria-live="polite"></div>
+      </section>
+
       <div class="builder-actions wizard-actions">
         <a class="button button-ghost" href="../app/dashboard.html" data-wizard-cancel>Cancelar</a>
         <div class="wizard-navigation">
           <button class="button button-secondary" type="button" data-step-back hidden>← Voltar</button>
           <button class="button button-primary" type="button" data-step-next>Continuar →</button>
-          <button class="button button-primary" type="submit" data-step-submit hidden>Criar e abrir editor →</button>
+          <button class="button button-primary" type="submit" data-step-submit hidden>Criar currículo →</button>
         </div>
       </div>
     </form>
