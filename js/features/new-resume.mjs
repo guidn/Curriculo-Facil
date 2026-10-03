@@ -42,6 +42,8 @@ export async function initNewResume() {
     backButton.hidden = index === 0;
     nextButton.hidden = index === panels.length - 1;
     submitButton.hidden = index !== panels.length - 1;
+    if (index === 3) nextButton.textContent = 'Ver preview →';
+    else nextButton.textContent = 'Continuar →';
     progress.style.width = `${((index + 1) / panels.length) * 100}%`;
     progressBar.setAttribute('aria-valuenow', String(index + 1));
   }
@@ -84,13 +86,22 @@ export async function initNewResume() {
     const chip = event.target.closest('[data-skill-chip]');
     if (chip) { chip.classList.toggle('selected'); chip.setAttribute('aria-pressed', String(chip.classList.contains('selected'))); }
   });
-  form.addEventListener('input', updateTemplatePreviews);
+  form.addEventListener('input', () => {
+    updateTemplatePreviews();
+    if (activeStep === panels.length - 1) renderFinalPreview(form);
+  });
+  form.addEventListener('change', () => {
+    updateTemplatePreviews();
+    if (activeStep === panels.length - 1) renderFinalPreview(form);
+  });
   form.addEventListener('click', event => {
     const remove = event.target.closest('[data-remove-entry]');
     if (remove) remove.closest('fieldset')?.remove();
   });
   nextButton.addEventListener('click', () => {
-    if (validateStep(activeStep)) showStep(Math.min(activeStep + 1, panels.length - 1));
+    if (!validateStep(activeStep)) return;
+    if (activeStep === 3) renderFinalPreview(form);
+    showStep(Math.min(activeStep + 1, panels.length - 1));
   });
   backButton.addEventListener('click', () => showStep(Math.max(activeStep - 1, 0)));
   indicators.forEach((button, index) => button.addEventListener('click', () => {
@@ -108,38 +119,12 @@ export async function initNewResume() {
   form.addEventListener('submit', async event => {
     event.preventDefault();
     if (!validateStep(activeStep)) return;
+    if (activeStep !== panels.length - 1) return;
     const fields = new FormData(form);
-    const template = fields.get('template') || 'modern';
-    const accent = templateCatalog.find(item=>item.id===template)?.accent || '#742cff';
-    const experiences = $$('[data-experience-entry]', form).map(row => ({
-      role: $('[name="experienceRole"]', row).value.trim(),
-      company: $('[name="experienceCompany"]', row).value.trim(),
-      startDate: $('[name="experienceStartDate"]', row).value,
-      endDate: $('[name="experienceEndDate"]', row).value,
-      current: $('[name="experienceCurrent"]', row).checked,
-      description: $('[name="experienceDescription"]', row).value.trim()
-    })).filter(item => item.role || item.company || item.startDate || item.description);
-    const education = $$('[data-education-entry]', form).map(row => ({
-      course: $('[name="educationCourse"]', row).value.trim(),
-      school: $('[name="educationSchool"]', row).value.trim(),
-      startDate: $('[name="educationStartDate"]', row).value,
-      endDate: $('[name="educationEndDate"]', row).value,
-      current: $('[name="educationCurrent"]', row).checked
-    })).filter(item => item.course || item.school || item.startDate);
-    const skills = [...$$('[data-skill-chip].selected', form).map(button => button.dataset.skillChip), ...String(fields.get('customSkills') || '').split(',').map(skill => skill.trim()).filter(Boolean)];
-    const data = {
-      name: String(fields.get('name') || '').trim(),
-      role: String(fields.get('role') || '').trim(),
-      email: String(fields.get('email') || '').trim(),
-      phone: String(fields.get('phone') || '').trim(),
-      city: String(fields.get('city') || '').trim(),
-      summary: String(fields.get('summary') || '').trim(),
-      experiences,
-      education,
-      skills
-    };
+    const { template, accent, data } = collectWizardResume(form, templateCatalog);
 
     submitButton.disabled = true;
+    submitButton.textContent = 'Criando currículo…';
     try {
       const result = await api('/resumes', {
         method: 'POST',
@@ -156,8 +141,56 @@ export async function initNewResume() {
       toast(err.message, 'error');
     } finally {
       submitButton.disabled = false;
+      submitButton.textContent = 'Criar currículo →';
     }
   });
+}
+
+function collectWizardResume(form, catalog) {
+  const fields = new FormData(form);
+  const template = String(fields.get('template') || 'modern');
+  const accent = catalog.find(item => item.id === template)?.accent || '#742cff';
+  const experiences = $$('[data-experience-entry]', form).map(row => ({
+    role: $('[name="experienceRole"]', row).value.trim(),
+    company: $('[name="experienceCompany"]', row).value.trim(),
+    startDate: $('[name="experienceStartDate"]', row).value,
+    endDate: $('[name="experienceEndDate"]', row).value,
+    current: $('[name="experienceCurrent"]', row).checked,
+    description: $('[name="experienceDescription"]', row).value.trim()
+  })).filter(item => item.role || item.company || item.startDate || item.description);
+  const education = $$('[data-education-entry]', form).map(row => ({
+    course: $('[name="educationCourse"]', row).value.trim(),
+    school: $('[name="educationSchool"]', row).value.trim(),
+    startDate: $('[name="educationStartDate"]', row).value,
+    endDate: $('[name="educationEndDate"]', row).value,
+    current: $('[name="educationCurrent"]', row).checked
+  })).filter(item => item.course || item.school || item.startDate);
+  const skills = [...$$('[data-skill-chip].selected', form).map(button => button.dataset.skillChip), ...String(fields.get('customSkills') || '').split(',').map(skill => skill.trim()).filter(Boolean)];
+  return {
+    template,
+    accent,
+    data: {
+      personal: {
+        name: String(fields.get('name') || '').trim(), headline: String(fields.get('role') || '').trim(),
+        email: String(fields.get('email') || '').trim(), phone: String(fields.get('phone') || '').trim(),
+        city: String(fields.get('city') || '').trim()
+      },
+      summary: String(fields.get('summary') || '').trim(), experiences, education, skills
+    }
+  };
+}
+
+function renderFinalPreview(form) {
+  const target = $('[data-final-preview]', form);
+  if (!target || !window.ResumeRendering) return;
+  const { template, accent, data } = collectWizardResume(form, templateCatalog);
+  const title = String(form.elements.title?.value || 'Meu currículo').trim();
+  const paper = document.createElement('article');
+  paper.className = 'paper';
+  paper.dataset.template = template;
+  paper.style.setProperty('--accent', accent);
+  paper.innerHTML = ResumeRendering.renderBody(data, { title });
+  target.replaceChildren(paper);
 }
 
 function updateTemplatePreviews() {
@@ -168,6 +201,6 @@ function updateTemplatePreviews() {
   const skills = [...$$('[data-skill-chip].selected', form).map(button => button.dataset.skillChip), ...String(values.get('customSkills') || '').split(',').map(x => x.trim()).filter(Boolean)];
   const previews = $$('.template-preview', form);
   const data={name:String(values.get('name')||'').trim(),role:String(values.get('role')||'').trim(),email:String(values.get('email')||'').trim(),phone:String(values.get('phone')||'').trim(),city:String(values.get('city')||'').trim(),summary:String(values.get('summary')||'').trim(),experiences:$$('[data-experience-entry]',form).map(row=>({role:$('[name="experienceRole"]',row).value,company:$('[name="experienceCompany"]',row).value,startDate:$('[name="experienceStartDate"]',row).value,endDate:$('[name="experienceEndDate"]',row).value,current:$('[name="experienceCurrent"]',row).checked,description:$('[name="experienceDescription"]',row).value})).filter(x=>x.role||x.company||x.description),education:$$('[data-education-entry]',form).map(row=>({course:$('[name="educationCourse"]',row).value,school:$('[name="educationSchool"]',row).value,startDate:$('[name="educationStartDate"]',row).value,endDate:$('[name="educationEndDate"]',row).value})).filter(x=>x.course||x.school),skills};
-  previews.forEach(preview=>{const template=preview.className.match(/template-preview-([a-z0-9-]+)/)?.[1]||'modern';preview.innerHTML=`<article class="resume-preview-sheet template-${template}" style="--accent:${preview.dataset.accent||'#742cff'}">${ResumeRendering.renderBody(data,{title:'Meu currículo'})}</article>`;});
+  previews.forEach(preview=>{const template=preview.className.match(/template-preview-([a-z0-9-]+)/)?.[1]||'modern';preview.innerHTML=`<article class="paper resume-preview-sheet template-${template}" data-template="${template}" style="--accent:${preview.dataset.accent||'#742cff'}">${ResumeRendering.renderBody(data,{title:'Meu currículo'})}</article>`;});
 }
 
