@@ -9,6 +9,7 @@ const { resumeDto } = require('../../application/resume-use-cases');
 const { parseCookies, setSessionCookie, clearSessionCookie } = require('./session-cookies');
 const { renderResumeHtml } = require('./resume-html');
 const { createDocx } = require('../../infrastructure/exporters/docx');
+const { createPdf } = require('../../infrastructure/exporters/pdf');
 const { toText } = require('../../../../js/resume-rendering');
 
 const MIME = { '.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'application/javascript; charset=utf-8','.mjs':'application/javascript; charset=utf-8','.json':'application/json; charset=utf-8','.txt':'text/plain; charset=utf-8','.svg':'image/svg+xml' };
@@ -87,11 +88,17 @@ async function route(req,res) {
       const exportMatch=p.match(/^\/api\/resumes\/([^/]+)\/export$/);
       if(method==='POST'&&exportMatch){
         const format=u.searchParams.get('format')||'pdf';
-        if(!['pdf','word','txt'].includes(format))return json(res,400,{error:'Formato de exportação inválido.'});
+        if(!['pdf','word','txt','print'].includes(format))return json(res,400,{error:'Formato de exportação inválido.'});
         const item=resumes.get(user,exportMatch[1]);
         if(!item)return json(res,404,{error:'Currículo não encontrado.'});
         if(!usage.consume(user,'exports'))return json(res,429,{error:'Seu limite diário de exportações foi atingido.'});
-        if(format==='pdf')return html(res,200,renderResumeHtml(item));
+        if(format==='print')return html(res,200,renderResumeHtml(item));
+        if(format==='pdf'){
+          const file=await createPdf(item);
+          res.statusCode=200;res.setHeader('Content-Type','application/pdf');
+          res.setHeader('Content-Disposition',`attachment; filename="curriculo-${item.id}.pdf"`);
+          return res.end(file);
+        }
         if(format==='txt'){
           res.statusCode=200;res.setHeader('Content-Type','text/plain; charset=utf-8');
           res.setHeader('Content-Disposition',`attachment; filename="curriculo-${item.id}.txt"`);
