@@ -4,6 +4,7 @@ import { initNewResume } from './features/new-resume.mjs';
 import { initEditor } from './features/editor.mjs';
 import { initModels, initPricing } from './features/billing.mjs';
 import { initProfile } from './features/profile.mjs';
+import { initDemoPreview } from './features/demo-preview.mjs';
 
 document.addEventListener('DOMContentLoaded', () => {
   initLanding();
@@ -16,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initEditor();
   initModels();
   initProfile();
+  initDemoPreview();
   initPricing();
   initLogout();
   const menuButton = document.querySelector('[data-menu]');
