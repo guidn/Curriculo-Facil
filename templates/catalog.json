@@ -1,0 +1,8 @@
+[
+  {"id":"modern","name":"Moderno","description":"Atual, equilibrado e profissional para diferentes áreas.","category":"modern","atsFriendly":true,"accent":"#742cff"},
+  {"id":"classic","name":"Clássico","description":"Formal, tradicional e com leitura direta em uma coluna.","category":"traditional","atsFriendly":true,"accent":"#1769aa"},
+  {"id":"minimal","name":"Minimalista","description":"Tipografia e espaço em branco dão prioridade ao conteúdo.","category":"minimal","atsFriendly":true,"accent":"#16805c"},
+  {"id":"executive","name":"Executivo","description":"Hierarquia refinada para trajetórias profissionais experientes.","category":"executive","atsFriendly":true,"accent":"#1f3a5f"},
+  {"id":"creative","name":"Criativo","description":"Composição expressiva para áreas digitais e criativas.","category":"creative","atsFriendly":true,"accent":"#d35f12"}
+]
+
