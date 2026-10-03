@@ -12,5 +12,9 @@
   },
   "engines": {
     "node": ">=22.5"
+  },
+  "dependencies": {
+    "docx": "^9.8.1"
   }
 }
+
