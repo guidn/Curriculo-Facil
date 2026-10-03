@@ -81,6 +81,11 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   assert.match(homeHtml, /Currículo Fácil/);
   assert.match(homeHtml, /data-public-home/);
   assert.match(homeHtml, /js\/app\.mjs/);
+  const demoResponse=await call('/api/dev/demo-resume');
+  assert.equal(demoResponse.status,200);
+  assert.equal((await demoResponse.json()).resume.data.personal.name,'Rafael Costa');
+  assert.equal((await call('/backend/test/fixtures/demo-resume.json')).status,404,'backend and test fixtures are not served as static files');
+  assert.equal((await call('/pages/builder/demo.html')).status,200);
   const wizardPage = await call('/pages/builder/novo-curriculo.html');
   const wizardHtml = await wizardPage.text();
   assert.equal((wizardHtml.match(/data-wizard-step=/g) || []).length, 5);
@@ -223,7 +228,8 @@ test('public pages, authentication, sessions, recovery and resume ownership', as
   const exportedHtml = await exported.text();
   assert.equal(exported.status, 200);
   assert.match(exportedHtml, /resume-paper template-classic/);
-  assert.match(exportedHtml, /template-classic \.resume-header/);
+  assert.match(exportedHtml, /css\/pages\/resume-renderer\.css/);
+  assert.match(await (await call('/css/pages/resume-renderer.css')).text(), /\.paper\[data-template="classic"\]/);
   assert.match(exportedHtml, /2022/);
   const resumeUpdated = await call(`/api/resumes/${resume.id}`, { method: 'PATCH', cookie, payload: { title: 'Currículo atualizado', template: 'executive', accent: '#1f3a5f', data: { ...resume.data, role: 'Analyst' } } });
   assert.equal(resumeUpdated.status, 200);
