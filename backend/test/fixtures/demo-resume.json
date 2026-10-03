@@ -1,0 +1,43 @@
+{
+  "title": "Ana Ribeiro — Produto e Operações",
+  "template": "modern",
+  "accent": "#742cff",
+  "data": {
+    "personal": {
+      "name": "Ana Ribeiro",
+      "headline": "Analista de Produto e Operações",
+      "email": "ana.ribeiro@example.test",
+      "phone": "(11) 98888-1234",
+      "city": "São Paulo",
+      "state": "SP",
+      "linkedin": "https://www.linkedin.com/in/ana-ribeiro-example",
+      "github": "https://github.com/ana-ribeiro-example",
+      "portfolio": "https://ana-ribeiro.example.test"
+    },
+    "summary": "Profissional de produto e operações com experiência em melhoria contínua, análise de dados e coordenação de iniciativas multidisciplinares. Conduz projetos do diagnóstico à entrega, alinhando objetivos de negócio, necessidades de clientes e capacidade técnica. Reconhecida por comunicação clara, organização e decisões orientadas por evidências.",
+    "experiences": [
+      { "role": "Analista de Produto", "company": "Nuvem Exemplo", "location": "São Paulo, SP", "startDate": "2023-02-01", "current": true, "description": ["Organizou o roadmap trimestral com engenharia, design e atendimento, elevando em 24% a entrega de iniciativas prioritárias.", "Implantou análise de funil e entrevistas com clientes para identificar oportunidades de melhoria na experiência."] },
+      { "role": "Assistente de Operações", "company": "Ponto Digital", "location": "São Paulo, SP", "startDate": "2020-04-01", "endDate": "2023-01-31", "description": ["Mapeou processos internos e reduziu em 18% o tempo médio de resolução de solicitações.", "Preparou relatórios semanais de indicadores e apoiou treinamentos para equipes de atendimento."] }
+    ],
+    "education": [
+      { "course": "Administração", "institution": "Universidade Metropolitana", "location": "São Paulo, SP", "startDate": "2017-02-01", "endDate": "2020-12-01" },
+      { "course": "Pós-graduação em Gestão de Produtos Digitais", "institution": "Instituto de Tecnologia Aplicada", "location": "Online", "startDate": "2022-03-01", "endDate": "2023-06-01" }
+    ],
+    "courses": [
+      { "name": "Fundamentos de Product Management", "institution": "Escola Aberta", "date": "2024-06-01" },
+      { "name": "Análise de Dados com SQL", "institution": "Dados em Prática", "date": "2023-10-01" },
+      { "name": "Pesquisa com Usuários", "institution": "Laboratório de Produto", "date": "2022-08-01" }
+    ],
+    "skills": ["Gestão de produto", "SQL", "Análise de dados", "Pesquisa com usuários", "Mapeamento de processos", "Comunicação", "Planejamento", "Facilitação de equipes"],
+    "languages": [{ "name": "Português", "proficiency": "Nativo" }, { "name": "Inglês", "proficiency": "Avançado" }],
+    "certifications": [
+      { "name": "Product Analytics Essentials", "issuer": "Academia Exemplo", "date": "2024-04-01" },
+      { "name": "Scrum Fundamentals", "issuer": "Centro de Aprendizagem", "date": "2022-11-01" }
+    ],
+    "projects": [
+      { "name": "Central de indicadores", "description": "Painel para acompanhamento de qualidade e volume de atendimento, com documentação dos indicadores e rotina de análise para as lideranças.", "technologies": ["SQL", "Looker Studio"], "url": "https://ana-ribeiro.example.test/indicadores" },
+      { "name": "Jornada de onboarding", "description": "Pesquisa e redesenho da jornada inicial de clientes, com protótipo testado em cinco sessões e plano de implementação incremental.", "technologies": ["Pesquisa", "Figma", "Produto"], "url": "https://ana-ribeiro.example.test/onboarding" }
+    ]
+  }
+}
+
