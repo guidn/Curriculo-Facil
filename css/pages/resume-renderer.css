@@ -1,6 +1,64 @@
-.paper .resume-header{padding-bottom:18px;border-bottom:2px solid var(--accent)}.paper .resume-header h1{margin:0;font-size:34px;line-height:1.08;letter-spacing:-.035em}.paper .resume-headline{margin:8px 0 0;font-size:15px;font-weight:600;color:#39343f}.paper .resume-contact{display:flex;flex-wrap:wrap;gap:5px 12px;margin-top:11px;font-size:10px;color:#625a68}.paper .resume-section{margin-top:24px;break-inside:auto}.paper .resume-section h2{margin:0 0 10px;color:var(--accent);font-size:13px;text-transform:uppercase;letter-spacing:.1em}.paper .resume-section p{margin:4px 0;line-height:1.5}.paper .resume-item{margin-bottom:14px;break-inside:avoid}.paper .resume-item-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px}.paper .resume-item h3{margin:0;font-size:13px}.paper .resume-item-heading>span,.paper .resume-meta{font-size:10px;color:#716b77}.paper .resume-item-heading>a{font-size:9px;color:#514577;overflow-wrap:anywhere}.paper .resume-paper ul,.paper .resume-section ul{margin:0;padding-left:20px}.paper .resume-skills{columns:2;column-gap:28px}.paper .resume-skills li{margin:3px 0;break-inside:avoid}.paper[data-template="classic"] .resume-header{text-align:center;border-bottom:1px solid #888}.paper[data-template="classic"] .resume-section h2{color:#222;letter-spacing:.02em;border-bottom:1px solid #bbb;padding-bottom:5px}.paper[data-template="minimal"] .resume-header{border:0;padding-bottom:4px}.paper[data-template="minimal"] .resume-header h1{font-weight:500}.paper[data-template="minimal"] .resume-section h2{color:#333;font-size:11px;letter-spacing:.16em}.paper[data-template="executive"] .resume-header{border-bottom:3px double var(--accent);padding-bottom:20px}.paper[data-template="executive"] .resume-headline{color:var(--accent)}.paper[data-template="executive"] .resume-section h2{font-size:11px;letter-spacing:.12em}.paper[data-template="creative"] .resume-header{border:0;padding-left:16px;border-left:5px solid var(--accent)}.paper[data-template="creative"] .resume-section h2{display:flex;align-items:center;gap:10px}.paper[data-template="creative"] .resume-section h2:after{content:"";height:1px;flex:1;background:#ddd}.paper[data-template="creative"] .resume-contact{color:#3d3542}
-.model-preview{overflow:hidden;padding:0!important}.resume-preview-sheet{position:relative;width:760px;min-height:1075px;margin:0;padding:58px 64px;overflow:hidden;background:#fff;color:#22212a;box-shadow:0 10px 25px #0002;font:11px/1.45 Arial,sans-serif;transform:scale(.34);transform-origin:top center;left:50%;translate:-50% 0}.resume-preview-sheet .resume-header h1{font-size:34px}.resume-preview-sheet .resume-headline{font-size:15px}.resume-preview-sheet .resume-section h2{font-size:13px}.resume-preview-sheet .resume-item h3{font-size:13px}.resume-preview-sheet .resume-section{margin-top:22px}.resume-preview-sheet.template-classic{font-family:Cambria,Georgia,serif}.resume-preview-sheet.template-minimal{padding:66px 70px;font-family:Calibri,Arial,sans-serif}.resume-preview-sheet.template-executive{font-family:Cambria,Georgia,serif}.resume-preview-sheet.template-creative{border-top:8px solid var(--accent);padding-top:50px}
-@media(max-width:760px){.paper .resume-item-heading{display:block}.paper .resume-item-heading>span{display:block}.paper .resume-skills{columns:1}}
+.paper,.resume-paper{--accent:#742cff;box-sizing:border-box;width:210mm;min-height:297mm;margin:0 auto;padding:18mm 19mm;background:#fff;color:#202027;font:10.2pt/1.48 Arial,Helvetica,sans-serif}
+.paper *,.resume-paper *{box-sizing:border-box}
+.resume-header{padding-bottom:17px;border-bottom:2px solid var(--accent)}
+.resume-header h1{margin:0;font-size:28pt;line-height:1.08;letter-spacing:-.035em}
+.resume-headline{margin:7px 0 0;font-size:13pt;font-weight:600;color:#39343f}
+.resume-contact{display:flex;flex-wrap:wrap;gap:4px 12px;margin-top:11px;color:#4c4a50;font-size:9pt;overflow-wrap:anywhere}
+.resume-contact span{overflow-wrap:anywhere}
+.resume-section{margin-top:18px;break-inside:auto}
+.resume-section h2{margin:0 0 8px;color:var(--accent);font-size:11.5pt;line-height:1.2;text-transform:uppercase;letter-spacing:.09em;break-after:avoid}
+.resume-section p{margin:4px 0}
+.resume-item{margin:0 0 11px;break-inside:avoid}
+.resume-item-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.resume-item h3{margin:0;font-size:10.8pt;line-height:1.35}
+.resume-item-heading>span,.resume-meta{color:#5c5961;font-size:9pt}
+.resume-item-heading>a{color:inherit;font-size:8.5pt;overflow-wrap:anywhere}
+.resume-paper ul,.paper ul{margin:0;padding-left:19px}
+.resume-skills{columns:2;column-gap:28px}
+.resume-skills li{margin:2px 0;break-inside:avoid}
+.resume-header,.resume-section,.resume-item{orphans:2;widows:2}
+
+/* Modern: compact contact rail in the header with a clear, contemporary hierarchy. */
+.paper[data-template="modern"],.resume-paper[data-template="modern"]{font-family:Arial,Helvetica,sans-serif}
+.paper[data-template="modern"] .resume-header,.resume-paper[data-template="modern"] .resume-header{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(175px,.8fr);align-items:center;column-gap:24px;padding-bottom:19px}
+.paper[data-template="modern"] .resume-header h1,.paper[data-template="modern"] .resume-headline,.resume-paper[data-template="modern"] .resume-header h1,.resume-paper[data-template="modern"] .resume-headline{grid-column:1}
+.paper[data-template="modern"] .resume-contact,.resume-paper[data-template="modern"] .resume-contact{grid-column:2;grid-row:1 / span 2;display:grid;gap:5px;margin:0;padding-left:15px;border-left:1px solid #ded9e7}
+.paper[data-template="modern"] .resume-section h2,.resume-paper[data-template="modern"] .resume-section h2{padding-bottom:5px;border-bottom:1px solid #e5e1eb}
+
+/* Classic: traditional single-column typography and centered contact block. */
+.paper[data-template="classic"],.resume-paper[data-template="classic"]{font-family:Cambria,Georgia,serif;padding-top:20mm}
+.paper[data-template="classic"] .resume-header,.resume-paper[data-template="classic"] .resume-header{text-align:center;border-bottom:1px solid #777}
+.paper[data-template="classic"] .resume-header h1,.resume-paper[data-template="classic"] .resume-header h1{font-size:25pt;letter-spacing:0}
+.paper[data-template="classic"] .resume-contact,.resume-paper[data-template="classic"] .resume-contact{justify-content:center}
+.paper[data-template="classic"] .resume-section h2,.resume-paper[data-template="classic"] .resume-section h2{padding-bottom:4px;border-bottom:1px solid #bbb;color:#222;letter-spacing:.025em}
+
+/* Minimal: editorial label rail, generous spacing and restrained typography. */
+.paper[data-template="minimal"],.resume-paper[data-template="minimal"]{padding:23mm 22mm;font-family:Calibri,Arial,sans-serif}
+.paper[data-template="minimal"] .resume-header,.resume-paper[data-template="minimal"] .resume-header{padding-bottom:6px;border:0}
+.paper[data-template="minimal"] .resume-header h1,.resume-paper[data-template="minimal"] .resume-header h1{font-size:31pt;font-weight:500;letter-spacing:-.045em}
+.paper[data-template="minimal"] .resume-contact,.resume-paper[data-template="minimal"] .resume-contact{gap:5px 17px}
+.paper[data-template="minimal"] .resume-section,.resume-paper[data-template="minimal"] .resume-section{display:grid;grid-template-columns:minmax(100px,26%) minmax(0,1fr);gap:14px;margin-top:23px}
+.paper[data-template="minimal"] .resume-section h2,.resume-paper[data-template="minimal"] .resume-section h2{margin:2px 0;color:#333;font-size:9.5pt;letter-spacing:.12em}
+.paper[data-template="minimal"] .resume-section p,.resume-paper[data-template="minimal"] .resume-section p{margin-top:0}
+
+/* Executive: a quiet corporate masthead and refined serif display typography. */
+.paper[data-template="executive"],.resume-paper[data-template="executive"]{padding-top:19mm;font-family:Cambria,Georgia,serif}
+.paper[data-template="executive"] .resume-header,.resume-paper[data-template="executive"] .resume-header{padding:18px 20px 20px;border:0;border-left:7px solid var(--accent);background:#f2f3f6}
+.paper[data-template="executive"] .resume-header h1,.resume-paper[data-template="executive"] .resume-header h1{font-size:27pt;letter-spacing:.01em}
+.paper[data-template="executive"] .resume-headline,.resume-paper[data-template="executive"] .resume-headline{color:var(--accent);font-family:Arial,Helvetica,sans-serif}
+.paper[data-template="executive"] .resume-section h2,.resume-paper[data-template="executive"] .resume-section h2{font-family:Arial,Helvetica,sans-serif;font-size:10pt;letter-spacing:.13em}
+
+/* Creative: an expressive side rule, offset masthead and graphic section dividers. */
+.paper[data-template="creative"],.resume-paper[data-template="creative"]{padding-top:16mm;border-top:8px solid var(--accent);font-family:"Trebuchet MS",Arial,sans-serif}
+.paper[data-template="creative"] .resume-header,.resume-paper[data-template="creative"] .resume-header{padding:3px 0 18px 17px;border:0;border-left:5px solid var(--accent)}
+.paper[data-template="creative"] .resume-header h1,.resume-paper[data-template="creative"] .resume-header h1{font-size:30pt}
+.paper[data-template="creative"] .resume-section h2,.resume-paper[data-template="creative"] .resume-section h2{display:flex;align-items:center;gap:10px}
+.paper[data-template="creative"] .resume-section h2:after,.resume-paper[data-template="creative"] .resume-section h2:after{height:1px;flex:1;background:#ddd;content:""}
+
+.resume-preview-sheet{position:relative;width:760px;min-height:1075px;margin:0;padding:58px 64px;overflow:hidden;box-shadow:0 10px 25px #0002;font-size:11px;line-height:1.45;transform:scale(.34);transform-origin:top center;left:50%;translate:-50% 0}
+.resume-preview-sheet .resume-header h1{font-size:34px}.resume-preview-sheet .resume-headline{font-size:15px}.resume-preview-sheet .resume-section h2{font-size:13px}.resume-preview-sheet .resume-item h3{font-size:13px}.resume-preview-sheet .resume-section{margin-top:22px}
+.model-preview{overflow:hidden;padding:0!important}
 .template-swatch{border-top-color:var(--template-accent,#742cff)!important;background-color:#fff}
-.paper .resume-skills{columns:1}
+@media(max-width:760px){.paper .resume-item-heading{display:block}.paper .resume-item-heading>span{display:block}.paper .resume-skills{columns:1}.paper[data-template="minimal"] .resume-section{grid-template-columns:1fr;gap:5px}}
+@media print{@page{size:A4;margin:0}body{margin:0;background:#fff}.paper,.resume-paper{width:210mm;min-height:297mm;margin:0;box-shadow:none;zoom:1!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}.no-print{display:none!important}.resume-section h2{break-after:avoid}.resume-item{break-inside:avoid}}
 
