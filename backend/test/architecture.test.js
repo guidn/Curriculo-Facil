@@ -7,6 +7,8 @@ const {createResumeUseCases}=require('../src/application/resume-use-cases');
 const {createUsageUseCases}=require('../src/application/usage-use-cases');
 const {capacity,presentationIsValid}=require('../src/domain/resume-policy');
 const {normalizeResumeProfile}=require('../src/domain/profile');
+const {normalizeResumeData}=require('../src/domain/resume-data');
+const rendering=require('../../js/resume-rendering');
 
 test('domain policies stay independent of HTTP and SQLite',()=>{
   assert.deepEqual(capacity(2,{resumeLimit:2}),{current:2,limit:2,available:0});
@@ -15,6 +17,20 @@ test('domain policies stay independent of HTTP and SQLite',()=>{
   assert.equal(presentationIsValid('unknown','#742cff'),false);
   assert.equal(normalizeResumeProfile({skills:'Excel, vendas'}).skills.length,2);
   assert.throws(()=>normalizeResumeProfile({experiences:[{startDate:'2025-03-01',endDate:'2024-03-01'}]}),/posterior/);
+});
+
+test('structured resume data keeps legacy fields and optional sections',()=>{
+  const resume=normalizeResumeData({name:'Ana',role:'Designer',education:[{course:'Design',school:'Universidade'}],skills:'Figma, Pesquisa',projects:[{name:'App',technologies:['Figma']}]});
+  assert.equal(resume.personal.name,'Ana');
+  assert.equal(resume.personal.headline,'Designer');
+  assert.equal(resume.education[0].institution,'Universidade');
+  assert.deepEqual(resume.skills,['Figma','Pesquisa']);
+  assert.equal(resume.projects[0].technologies[0],'Figma');
+  const html=rendering.renderBody(resume);
+  assert.match(html,/Formação acadêmica/);
+  assert.doesNotMatch(html,/Experiência profissional|Cursos|Certificações/,'empty sections are omitted');
+  for(const template of ['modern','classic','minimal','executive','creative'])assert.match(rendering.renderDocument({template,data:resume}),new RegExp(`template-${template}`));
+  assert.match(rendering.toText({title:'Ana',data:resume}),/HABILIDADES/);
 });
 
 test('authentication use cases depend on repository and security ports',async()=>{
@@ -59,3 +75,4 @@ test('browser ES modules resolve through the new presentation structure',async()
     await import(pathToFileURL(path.resolve(__dirname,'../../js/app.mjs')));
   } finally { delete globalThis.document; }
 });
+
