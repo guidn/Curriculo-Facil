@@ -7,10 +7,27 @@ export async function initEditor(){
   fillEditor(form,r);
   const templates=(await api('/models')).models;
   $('[data-template-options]').innerHTML=templates.map(item=>`<button type="button" class="template-choice" data-template="${escapeHtml(item.id)}"><i class="template-swatch" style="--template-accent:${escapeHtml(item.accent)}"></i><span><strong>${escapeHtml(item.name)}</strong><small>${escapeHtml(item.description)}</small></span><b>✓</b></button>`).join('');
-  const status=$('[data-save-status]'), workspace=$('.editor-workspace'); let saveTimer, zoom=.86;
+  const status=$('[data-save-status]'), workspace=$('.editor-workspace'); let saveTimer, zoom=.86, revision=0, savedRevision=0, savePromise=null;
   const showStatus=message=>{if(status)status.textContent=message};
-  const save=async quiet=>{clearTimeout(saveTimer);showStatus('Salvando…');const updated=await saveEditor(form,r,{quiet});if(updated){r=updated;showStatus('Salvo agora')}else showStatus('Não foi possível salvar')};
-  const scheduleSave=()=>{showStatus('Alterações pendentes');clearTimeout(saveTimer);saveTimer=setTimeout(()=>save(true),1100)};
+  const save=quiet=>{
+    clearTimeout(saveTimer);
+    if(revision===savedRevision){if(!quiet)showStatus('Salvo agora');return Promise.resolve(r)}
+    if(savePromise)return savePromise.then(()=>revision===savedRevision?r:save(quiet));
+    savePromise=(async()=>{
+      let updated;
+      do{
+        const savingRevision=revision;
+        showStatus('Salvando…');
+        updated=await saveEditor(form,r,{quiet});
+        if(!updated){showStatus('Não foi possível salvar');return null}
+        r=updated;savedRevision=savingRevision;
+      }while(savedRevision<revision);
+      showStatus('Salvo agora');
+      return r;
+    })().finally(()=>{savePromise=null});
+    return savePromise;
+  };
+  const scheduleSave=()=>{revision++;showStatus('Alterações pendentes');clearTimeout(saveTimer);saveTimer=setTimeout(()=>save(true),1100)};
   const refresh=()=>{renderPaper(form);scheduleSave()};
   $$('[data-editor-add]').forEach(button=>button.addEventListener('click',()=>{addEditorEntry(form,button.dataset.editorAdd);refresh();button.previousElementSibling?.scrollIntoView({behavior:'smooth',block:'nearest'})}));
   form.addEventListener('click',event=>{if(event.target.closest('[data-editor-remove]')){event.target.closest('[data-editor-entry]')?.remove();refresh()}});
